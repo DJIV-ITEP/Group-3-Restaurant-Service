@@ -2,6 +2,8 @@ package com.itep.restaurant_service.repositories.entities;
 
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.Collection;
 
@@ -13,8 +15,9 @@ public class ShiftEntity {
     private long id;
     @Column(name = "name")
     private String name;
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "shift_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Collection<DayEntity> days;
 
     ShiftEntity() {
