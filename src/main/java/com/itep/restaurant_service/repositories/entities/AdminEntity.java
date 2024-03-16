@@ -3,6 +3,8 @@ package com.itep.restaurant_service.repositories.entities;
 
 import jakarta.persistence.*;
 
+import java.util.Collection;
+
 @Entity
 @Table(name = "admins")
 public class AdminEntity {
@@ -13,6 +15,9 @@ public class AdminEntity {
     private final String username;
     @Column(name = "password")
     private String password;
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "admin_id")
+    Collection<RestaurantEntity> restaurants;
 
     AdminEntity() {
         this( "", "");
