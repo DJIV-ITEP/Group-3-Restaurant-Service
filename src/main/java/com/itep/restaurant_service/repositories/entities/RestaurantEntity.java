@@ -3,6 +3,8 @@ package com.itep.restaurant_service.repositories.entities;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.Collection;
 
@@ -28,11 +30,13 @@ public class RestaurantEntity {
     public String username;
     @Column(name = "password", nullable = false)
     public String password;
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurant_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     Collection<CategoryEntity> categories;
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurant_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     Collection<ShiftEntity> shifts;
 
     public RestaurantEntity(){
