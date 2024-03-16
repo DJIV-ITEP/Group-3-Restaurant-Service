@@ -2,6 +2,7 @@ package com.itep.restaurant_service.repositories.entities;
 
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -12,9 +13,9 @@ import java.util.Collection;
 public class AdminEntity {
     @Id
     @Column(name = "username")
-    private final String username;
+    public final String username;
     @Column(name = "password")
-    private String password;
+    public String password;
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "added_by")
     @OnDelete(action = OnDeleteAction.NO_ACTION)

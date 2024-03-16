@@ -13,8 +13,5 @@ public class RestaurantServiceApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(RestaurantServiceApplication.class, args);
 	}
-	@GetMapping(value = "/username")
-	public Object currentUserName(Authentication authentication) {
-		return authentication.getDetails();
-	}
+
 }
