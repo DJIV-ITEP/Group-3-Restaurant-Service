@@ -12,7 +12,7 @@ import java.util.Collection;
 public class AdminEntity {
     @Id
     @Column(name = "username")
-    private final String username;
+    private String username;
     @Column(name = "password")
     private String password;
     @OneToMany(fetch = FetchType.LAZY)
@@ -21,7 +21,6 @@ public class AdminEntity {
     Collection<RestaurantEntity> restaurants;
 
     AdminEntity() {
-        this( "", "");
     }
 
     public AdminEntity(String username,
