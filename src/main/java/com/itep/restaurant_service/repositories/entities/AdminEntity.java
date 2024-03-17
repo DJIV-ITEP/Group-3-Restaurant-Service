@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "admins")
 public class AdminEntity {
     @Id
-    @Column(name = "username")
+    @Column(name = "username", unique = true)
     private String username;
     @Column(name = "password")
     private String password;

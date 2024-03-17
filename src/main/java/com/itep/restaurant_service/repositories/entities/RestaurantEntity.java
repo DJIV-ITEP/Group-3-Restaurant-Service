@@ -31,7 +31,7 @@ public class RestaurantEntity {
     private String food;
     @Column(name = "cuisine", nullable = false)
     private String cuisine;
-    @Column(name = "username", nullable = false)
+    @Column(name = "username", nullable = false, unique = true)
     private String username;
     @Column(name = "password", nullable = false)
     private String password;
