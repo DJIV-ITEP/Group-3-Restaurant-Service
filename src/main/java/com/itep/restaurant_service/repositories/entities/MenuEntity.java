@@ -1,12 +1,16 @@
 package com.itep.restaurant_service.repositories.entities;
 
 
+import com.itep.restaurant_service.models.MenuResource;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-
-import java.util.Collection;
-
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "menus")
 public class MenuEntity {
@@ -15,16 +19,16 @@ public class MenuEntity {
     private long id;
     @Column(name = "name")
     private String name;
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "menu_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private Collection<ItemEntity> items;
-
-    MenuEntity() {
-    }
-
-    public MenuEntity(String name) {
-        this.name = name;
+    private CategoryEntity category;
+    public MenuResource toMenuResource() {
+        return MenuResource
+                .builder()
+                .id(id)
+                .name(name)
+                .build();
     }
 
 }

@@ -1,11 +1,18 @@
 package com.itep.restaurant_service.repositories.entities;
 
 
-import jakarta.persistence.*;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
+import com.itep.restaurant_service.models.AdminResource;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.util.Collection;
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 
 @Entity
 @Table(name = "admins")
@@ -15,18 +22,11 @@ public class AdminEntity {
     private String username;
     @Column(name = "password")
     private String password;
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "added_by")
-    @OnDelete(action = OnDeleteAction.NO_ACTION)
-    Collection<RestaurantEntity> restaurants;
-
-    AdminEntity() {
+    public AdminResource toAdminResource() {
+        return AdminResource
+                .builder()
+                .username(username)
+                .password(password)
+                .build();
     }
-
-    public AdminEntity(String username,
-                       String password) {
-        this.username = username;
-        this.password = password;
-    }
-
 }
