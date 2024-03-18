@@ -28,10 +28,17 @@ public class RestaurantController {
 
     @PostMapping("/restaurants")
     public ResponseEntity<Object> createRestaurant(@RequestBody RestaurantEntity body)  {
-        restaurantService.createRestaurant(body);
-        return new ResponseEntity<>(
-                Map.of("message","Restaurant created successfully",
-                        "status", 200)
-                , HttpStatus.OK);
+        try {
+            restaurantService.createRestaurant(body);
+            return new ResponseEntity<>(
+                    Map.of("message","Restaurant created successfully",
+                            "status", 200)
+                    , HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(
+                    Map.of("message",e.getMessage(),
+                            "status", 400)
+                    , HttpStatus.OK);
+        }
     }
 }

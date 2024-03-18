@@ -9,5 +9,5 @@ import java.util.List;
 
 public interface RestaurantService {
     List<RestaurantResource> getAvailableRestaurants();
-    RestaurantResource createRestaurant(@RequestBody RestaurantEntity body);
+    RestaurantResource createRestaurant(RestaurantEntity body) throws Exception;
 }
