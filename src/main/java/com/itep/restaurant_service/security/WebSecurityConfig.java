@@ -52,8 +52,8 @@ public class WebSecurityConfig {
         List<AdminEntity> admins = adminRepository.findAll();
         for(AdminEntity admin: admins){
             users.add(User.withDefaultPasswordEncoder()
-                    .username(admin.username)
-                    .password(admin.password)
+                    .username(admin.getUsername())
+                    .password(admin.getPassword())
                     .roles("ADMIN")
                     .build());
 
@@ -62,8 +62,8 @@ public class WebSecurityConfig {
         List<RestaurantEntity> restaurants = restaurantRepository.findAll();
         for(RestaurantEntity restaurant: restaurants){
             users.add(User.withDefaultPasswordEncoder()
-                    .username(restaurant.username)
-                    .password(restaurant.password)
+                    .username(restaurant.getUsername())
+                    .password(restaurant.getPassword())
                     .roles("RESTAURANT")
                     .build());
 
