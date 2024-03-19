@@ -2,8 +2,11 @@ package com.itep.restaurant_service.services.impl;
 
 import com.itep.restaurant_service.models.RestaurantResource;
 import com.itep.restaurant_service.repositories.RestaurantRepository;
+import com.itep.restaurant_service.repositories.entities.AdminEntity;
 import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
 import com.itep.restaurant_service.services.RestaurantService;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,6 +29,8 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     @Override
     public RestaurantResource createRestaurant(RestaurantEntity body) throws Exception {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        body.setAdded_by(new AdminEntity(auth.getName(), ""));
         try{
             return restaurantRepository.save(body).toRestaurantResource();
         }catch (Exception e){
