@@ -8,10 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -43,7 +40,21 @@ public class RestaurantController {
             return new ResponseEntity<>(
                     Map.of("message",e.getMessage(),
                             "status", 400)
-                    , HttpStatus.OK);
+                    , HttpStatus.BAD_REQUEST);
         }
+    }
+
+
+    @GetMapping("/restaurants/{restaurantId}")
+    public ResponseEntity<Object> getRestaurantDetails(@PathVariable("restaurantId") long restaurantId){
+        var restaurantResource = restaurantService.getRestaurantDetails(restaurantId);
+        return restaurantResource.<ResponseEntity<Object>>map(
+                resource -> new ResponseEntity<>(
+                    resource, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(
+                Map.of("message", "Restaurant not found",
+                        "status", 404)
+                , HttpStatus.NOT_FOUND));
+
     }
 }
