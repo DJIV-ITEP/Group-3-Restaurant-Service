@@ -8,6 +8,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -23,6 +26,11 @@ public class MenuEntity {
     @JoinColumn(name = "category_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private CategoryEntity category;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "menu")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private List<ItemEntity> items;
     public MenuResource toMenuResource() {
         return MenuResource
                 .builder()
