@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,7 +41,7 @@ public class RestaurantController {
             return new ResponseEntity<>(
                     Map.of("message",e.getMessage(),
                             "status", 400)
-                    , HttpStatus.BAD_REQUEST);
+                    , HttpStatus.OK);
         }
     }
 
@@ -55,6 +56,51 @@ public class RestaurantController {
                 Map.of("message", "Restaurant not found",
                         "status", 404)
                 , HttpStatus.NOT_FOUND));
+
+    }
+
+
+
+    @PreAuthorize("hasRole('ROLE_RESTAURANT')")
+    @PostMapping("/restaurants/{restaurantId}/status")
+    public ResponseEntity<Object> setRestaurantStatus(@PathVariable("restaurantId") long restaurantId, @RequestBody Map<String, Object> body){
+        var restaurantResource = restaurantService.getRestaurantDetails(restaurantId);
+        if(restaurantResource.isEmpty()){
+            return new ResponseEntity<>(
+                    Map.of("message", "Restaurant not found",
+                            "status", 404),
+                    HttpStatus.NOT_FOUND);
+        }
+        // check if the updated restaurant belong to the user who wants to update
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        var userRestaurant = restaurantService.getRestaurantByUsername(auth.getName());
+        if (userRestaurant.isEmpty()){
+            return new ResponseEntity<>(
+                    Map.of("message", "Your restaurant information not found",
+                            "status", 404),
+                    HttpStatus.NOT_FOUND);
+
+        }
+        if(restaurantResource.get().id != userRestaurant.get().id){
+            return new ResponseEntity<>(
+                    Map.of("message", "You don't have the permission to update this restaurant",
+                            "status", 400),
+                    HttpStatus.BAD_REQUEST);
+        }
+
+        String status = body.get("status").toString();
+        if("offline".equals(status)||"online".equals(status)) {
+            restaurantService.setRestaurantStatus(restaurantId, status);
+            return new ResponseEntity<>(
+                    Map.of("message", "Restaurant status updated successfully",
+                            "status", 200)
+                    , HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(
+                    Map.of("message", "Restaurant status must be either 'offline' or 'online' only",
+                            "status", 400)
+                    , HttpStatus.BAD_REQUEST);
+        }
 
     }
 }

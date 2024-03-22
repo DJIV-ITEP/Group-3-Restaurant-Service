@@ -51,4 +51,15 @@ public class RestaurantServiceImpl implements RestaurantService {
         Optional<RestaurantEntity> restaurantEntity = restaurantRepository.findById(restaurantId);
         return restaurantEntity.map(RestaurantEntity::toRestaurantResource);
     }
+
+    @Override
+    public Optional<RestaurantResource> getRestaurantByUsername(String username) {
+        Optional<RestaurantEntity> restaurantEntity = restaurantRepository.findByUsername(username);
+        return restaurantEntity.map(RestaurantEntity::toRestaurantResource);
+    }
+
+    @Override
+    public void setRestaurantStatus(long id, String status) {
+        restaurantRepository.updateStatus(id, status);
+    }
 }
