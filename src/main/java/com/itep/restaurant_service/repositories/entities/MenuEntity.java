@@ -31,6 +31,10 @@ public class MenuEntity {
     @JoinColumn(name = "menu")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private List<ItemEntity> items;
+
+    public MenuEntity(String newMenu) {
+    }
+
     public MenuResource toMenuResource() {
         return MenuResource
                 .builder()
