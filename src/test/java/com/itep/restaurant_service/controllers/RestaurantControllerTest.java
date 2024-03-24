@@ -4,10 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.itep.restaurant_service.models.RestaurantResource;
-import com.itep.restaurant_service.repositories.AdminRepository;
 import com.itep.restaurant_service.repositories.RestaurantRepository;
-import com.itep.restaurant_service.repositories.entities.AdminEntity;
+import com.itep.restaurant_service.repositories.UserRepository;
 import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
+import com.itep.restaurant_service.repositories.entities.UserEntity;
 import com.itep.restaurant_service.security.WebSecurityConfig;
 import com.itep.restaurant_service.services.impl.RestaurantServiceImpl;
 import org.junit.jupiter.api.Test;
@@ -41,11 +41,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class RestaurantControllerTest {
     @Autowired
     private MockMvc mockMvc;
-    @MockBean
-    AdminRepository adminRepository;
 
     @MockBean
     RestaurantRepository restaurantRepository;
+    @MockBean
+    UserRepository userRepository;
 
     @MockBean
     private RestaurantServiceImpl restaurantService;
@@ -64,7 +64,7 @@ public class RestaurantControllerTest {
     @Test
     @WithMockUser()
     void testGetAvailableRestaurants_NotEmpty() throws Exception {
-        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine","username", "password", new AdminEntity("admin", "admin"));
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("owner", "owner"));
         List<RestaurantResource> result = new ArrayList<>();
         result.add(restaurant.toRestaurantResource());
         when(restaurantService.getAvailableRestaurants())
@@ -87,7 +87,7 @@ public class RestaurantControllerTest {
     @Test
     @WithMockUser()
     void testCreateRestaurant_NotSystemAdmin() throws Exception {
-        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine","username", "password", new AdminEntity("", ""));
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("owner", "owner"));
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
         ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
@@ -100,7 +100,7 @@ public class RestaurantControllerTest {
     @Test
     @WithMockUser(roles= "ADMIN")
     void testCreateRestaurant_SystemAdmin() throws Exception {
-        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine","username", "password", null);
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("owner", "owner"));
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
         ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
@@ -173,33 +173,12 @@ public class RestaurantControllerTest {
     }
     @Test
     @WithMockUser(username = "username", password = "password",roles= "RESTAURANT")
-    void testSetRestaurantStatus_HasRestaurantRoleAndItsRestaurantNotFound() throws Exception {
-        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine","username", "password", null);
-        when(restaurantService.getRestaurantDetails(1))
-                .thenReturn(Optional.of(restaurant.toRestaurantResource()));
-        when(restaurantService.getRestaurantByUsername("username"))
-                .thenReturn(Optional.empty());
-
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
-        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
-        Map<String, Object> statusMap = Map.of("status", "online");
-        String statusJson=ow.writeValueAsString(statusMap);
-
-        mockMvc.perform(MockMvcRequestBuilders.post("/restaurants/1/status").contentType(APPLICATION_JSON)
-                        .content(statusJson).with(csrf()))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @WithMockUser(username = "username", password = "password",roles= "RESTAURANT")
     void testSetRestaurantStatus_HasRestaurantRoleAndNotOwnIt() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine","username", "password", null);
-        RestaurantEntity restaurant2 = new RestaurantEntity(2, "name", "address", "location", "status", "food", "cuisine","username", "password", null);
+        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", null);
         when(restaurantService.getRestaurantDetails(1))
                 .thenReturn(Optional.of(restaurant1.toRestaurantResource()));
-        when(restaurantService.getRestaurantByUsername("username"))
-                .thenReturn(Optional.of(restaurant2.toRestaurantResource()));
+        when(restaurantService.getRestaurantOwner(1))
+                .thenReturn(Optional.of(new UserEntity("another", "password")));
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
@@ -215,11 +194,11 @@ public class RestaurantControllerTest {
     @Test
     @WithMockUser(username = "username", password = "password",roles= "RESTAURANT")
     void testSetRestaurantStatus_HasRestaurantRoleAndOwnIt() throws Exception {
-        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine","username", "password", null);
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", null);
         when(restaurantService.getRestaurantDetails(1))
                 .thenReturn(Optional.of(restaurant.toRestaurantResource()));
-        when(restaurantService.getRestaurantByUsername("username"))
-                .thenReturn(Optional.of(restaurant.toRestaurantResource()));
+        when(restaurantService.getRestaurantOwner(1))
+                .thenReturn(Optional.of(new UserEntity("username", "password")));
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);

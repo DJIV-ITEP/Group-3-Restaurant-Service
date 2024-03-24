@@ -12,10 +12,5 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface RestaurantRepository extends JpaRepository<RestaurantEntity, Long> {
-    List<RestaurantEntity> findByStatus(String status);
-    Optional<UserEntity> findOwnerById(long restaurantId);
-    @Modifying
-    @Query("update restaurants restaurant set restaurant.status = :status where restaurant.id = :id")
-    void updateStatus(@Param(value = "id") long id, @Param(value = "status") String status);
+public interface UserRepository extends JpaRepository<UserEntity, Long> {
 }

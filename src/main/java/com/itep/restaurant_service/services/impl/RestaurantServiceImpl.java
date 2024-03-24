@@ -2,11 +2,10 @@ package com.itep.restaurant_service.services.impl;
 
 import com.itep.restaurant_service.models.RestaurantResource;
 import com.itep.restaurant_service.repositories.RestaurantRepository;
-import com.itep.restaurant_service.repositories.entities.AdminEntity;
+import com.itep.restaurant_service.repositories.UserRepository;
 import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
+import com.itep.restaurant_service.repositories.entities.UserEntity;
 import com.itep.restaurant_service.services.RestaurantService;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,10 +14,12 @@ import java.util.stream.Collectors;
 
 @Service
 public class RestaurantServiceImpl implements RestaurantService {
+    private final UserRepository userRepository;
     private final RestaurantRepository restaurantRepository;
 
-    public RestaurantServiceImpl(RestaurantRepository restaurantRepository) {
+    public RestaurantServiceImpl(RestaurantRepository restaurantRepository, UserRepository userRepository) {
         this.restaurantRepository = restaurantRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -30,9 +31,8 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     @Override
     public RestaurantResource createRestaurant(RestaurantEntity body) throws Exception {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        body.setAdded_by(new AdminEntity(auth.getName(), ""));
         try{
+            userRepository.save(body.getOwner());
             return restaurantRepository.save(body).toRestaurantResource();
         }catch (Exception e){
             if(e.getMessage().contains("duplicate key value violates unique constraint")){
@@ -53,9 +53,8 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
-    public Optional<RestaurantResource> getRestaurantByUsername(String username) {
-        Optional<RestaurantEntity> restaurantEntity = restaurantRepository.findByUsername(username);
-        return restaurantEntity.map(RestaurantEntity::toRestaurantResource);
+    public Optional<UserEntity> getRestaurantOwner(long restaurantId) {
+        return restaurantRepository.findOwnerById(restaurantId);
     }
 
     @Override
