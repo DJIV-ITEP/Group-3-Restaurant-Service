@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -106,5 +107,38 @@ public class RestaurantControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.post("/restaurants").contentType(APPLICATION_JSON)
                         .content(requestJson).with(csrf()))
                 .andExpect(status().isOk());
+    }
+
+
+    @Test
+    @WithMockUser()
+    void testGetRestaurantDetail_NotFound() throws Exception {
+
+        when(restaurantService.getRestaurantDetails(0))
+                .thenReturn(Optional.empty());
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/restaurants/0"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+    @Test
+    @WithMockUser()
+    void testGetRestaurantDetail_Found() throws Exception {
+        Optional<RestaurantResource> result = Optional.of(new RestaurantResource(1, "name", "address", "location", "status", "food", "cuisine"));
+        when(restaurantService.getRestaurantDetails(1))
+                .thenReturn(result);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/restaurants/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.*", hasSize(7)))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id", equalTo(((int) result.get().id))))
+                .andExpect(jsonPath("$.name", equalTo(result.get().name)))
+                .andExpect(jsonPath("$.address", equalTo(result.get().address)))
+                .andExpect(jsonPath("$.location", equalTo(result.get().location)))
+                .andExpect(jsonPath("$.status", equalTo(result.get().status)))
+                .andExpect(jsonPath("$.food", equalTo(result.get().food)))
+                .andExpect(jsonPath("$.cuisine", equalTo(result.get().cuisine)))
+        ;
     }
 }
