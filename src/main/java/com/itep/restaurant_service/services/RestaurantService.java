@@ -14,4 +14,6 @@ public interface RestaurantService {
     RestaurantResource createRestaurant(RestaurantEntity body) throws Exception;
 
     Optional<RestaurantResource> getRestaurantDetails(long restaurantId);
+    Optional<RestaurantResource> getRestaurantByUsername(String username);
+    void setRestaurantStatus(long id, String status);
 }
