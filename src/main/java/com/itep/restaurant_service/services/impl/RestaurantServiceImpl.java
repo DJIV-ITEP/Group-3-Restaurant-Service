@@ -29,6 +29,23 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
+    public List<RestaurantResource> getAvailableFilteredRestaurants(String food, String cuisine) {
+        if (food != null && cuisine != null){
+            return restaurantRepository.findByFoodAndCuisineAndStatus(food, cuisine, "online") .stream()
+                    .map(RestaurantEntity::toRestaurantResource)
+                    .collect(Collectors.toList());
+        } else if (food != null) {
+            return restaurantRepository.findByFoodAndStatus(food, "online") .stream()
+                    .map(RestaurantEntity::toRestaurantResource)
+                    .collect(Collectors.toList());
+        } else {
+            return restaurantRepository.findByCuisineAndStatus(cuisine, "online") .stream()
+                    .map(RestaurantEntity::toRestaurantResource)
+                    .collect(Collectors.toList());
+        }
+    }
+
+    @Override
     public RestaurantResource createRestaurant(RestaurantEntity body) throws Exception {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         body.setAdded_by(new AdminEntity(auth.getName(), ""));
@@ -52,14 +69,4 @@ public class RestaurantServiceImpl implements RestaurantService {
         return restaurantEntity.map(RestaurantEntity::toRestaurantResource);
     }
 
-    @Override
-    public Optional<RestaurantResource> getRestaurantByUsername(String username) {
-        Optional<RestaurantEntity> restaurantEntity = restaurantRepository.findByUsername(username);
-        return restaurantEntity.map(RestaurantEntity::toRestaurantResource);
-    }
-
-    @Override
-    public void setRestaurantStatus(long id, String status) {
-        restaurantRepository.updateStatus(id, status);
-    }
 }
