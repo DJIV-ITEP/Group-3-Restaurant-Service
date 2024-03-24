@@ -41,7 +41,7 @@ public class RestaurantController {
             return new ResponseEntity<>(
                     Map.of("message",e.getMessage(),
                             "status", 400)
-                    , HttpStatus.OK);
+                    , HttpStatus.BAD_REQUEST);
         }
     }
 
