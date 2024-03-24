@@ -13,7 +13,7 @@ import java.util.Collection;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
+@Entity(name = "restaurants")
 @Table(name = "restaurants")
 public class RestaurantEntity {
     @Id
