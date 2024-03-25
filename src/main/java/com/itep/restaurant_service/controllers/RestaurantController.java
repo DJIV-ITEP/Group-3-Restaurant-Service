@@ -7,11 +7,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -24,8 +22,23 @@ public class RestaurantController {
     }
 
     @GetMapping("/restaurants")
-    public List<RestaurantResource> getRestaurants(){
-        return restaurantService.getAvailableRestaurants();
+    public ResponseEntity<Object> getRestaurants(@RequestParam(value = "food", required = false) String food, @RequestParam(value = "cuisine", required = false) String cuisine){
+        if (food == null && cuisine == null){
+            return new ResponseEntity<>(
+                    restaurantService.getAvailableRestaurants()
+                    , HttpStatus.OK);
+        }
+        try {
+            return new ResponseEntity<>(
+                    restaurantService.getAvailableFilteredRestaurants(food, cuisine)
+                    , HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(
+                    Map.of("message",e.getMessage(),
+                            "status", 400)
+                    , HttpStatus.BAD_REQUEST);
+
+        }
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -50,12 +63,12 @@ public class RestaurantController {
     public ResponseEntity<Object> getRestaurantDetails(@PathVariable("restaurantId") long restaurantId){
         var restaurantResource = restaurantService.getRestaurantDetails(restaurantId);
         return restaurantResource.<ResponseEntity<Object>>map(
-                resource -> new ResponseEntity<>(
-                    resource, HttpStatus.OK))
+                        resource -> new ResponseEntity<>(
+                                resource, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(
-                Map.of("message", "Restaurant not found",
-                        "status", 404)
-                , HttpStatus.NOT_FOUND));
+                        Map.of("message", "Restaurant not found",
+                                "status", 404)
+                        , HttpStatus.NOT_FOUND));
 
     }
 

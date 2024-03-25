@@ -86,6 +86,92 @@ public class RestaurantControllerTest {
     }
     @Test
     @WithMockUser()
+    void testGetAvailableFilteredRestaurants_ByFoodAndCuisine() throws Exception {
+        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni","username", "password", new AdminEntity("admin", "admin"));
+        RestaurantEntity restaurant2 = new RestaurantEntity(2, "name", "address", "location", "status", "Vegan", "Yemeni","username", "password", new AdminEntity("admin", "admin"));
+        RestaurantEntity restaurant3 = new RestaurantEntity(3, "name", "address", "location", "status", "Seafood", "Egyptian","username", "password", new AdminEntity("admin", "admin"));
+        RestaurantEntity restaurant4 = new RestaurantEntity(4, "name", "address", "location", "status", "Vegan", "Egyptian","username", "password", new AdminEntity("admin", "admin"));
+        List<RestaurantResource> result = new ArrayList<>();
+        result.add(restaurant1.toRestaurantResource());
+        when(restaurantService.getAvailableFilteredRestaurants("Seafood", "Yemeni"))
+                .thenReturn(result);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/restaurants")
+                        .param("food","Seafood")
+                        .param("cuisine", "Yemeni"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].*", hasSize(7)))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].id", equalTo(((int) result.get(0).id))))
+                .andExpect(jsonPath("$[0].name", equalTo(result.get(0).name)))
+                .andExpect(jsonPath("$[0].address", equalTo(result.get(0).address)))
+                .andExpect(jsonPath("$[0].location", equalTo(result.get(0).location)))
+                .andExpect(jsonPath("$[0].status", equalTo(result.get(0).status)))
+                .andExpect(jsonPath("$[0].food", equalTo(result.get(0).food)))
+                .andExpect(jsonPath("$[0].cuisine", equalTo(result.get(0).cuisine)))
+        ;
+    }
+
+    @Test
+    @WithMockUser()
+    void testGetAvailableFilteredRestaurants_ByFood() throws Exception {
+        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni","username", "password", new AdminEntity("admin", "admin"));
+        RestaurantEntity restaurant2 = new RestaurantEntity(2, "name", "address", "location", "status", "Vegan", "Yemeni","username", "password", new AdminEntity("admin", "admin"));
+        RestaurantEntity restaurant3 = new RestaurantEntity(3, "name", "address", "location", "status", "Seafood", "Egyptian","username", "password", new AdminEntity("admin", "admin"));
+        RestaurantEntity restaurant4 = new RestaurantEntity(4, "name", "address", "location", "status", "Vegan", "Egyptian","username", "password", new AdminEntity("admin", "admin"));
+        List<RestaurantResource> result = new ArrayList<>();
+        result.add(restaurant1.toRestaurantResource());
+        result.add(restaurant3.toRestaurantResource());
+        when(restaurantService.getAvailableFilteredRestaurants("Seafood",  null))
+                .thenReturn(result);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/restaurants")
+                        .param("food","Seafood"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].*", hasSize(7)))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].id", equalTo(((int) result.get(0).id))))
+                .andExpect(jsonPath("$[0].name", equalTo(result.get(0).name)))
+                .andExpect(jsonPath("$[0].address", equalTo(result.get(0).address)))
+                .andExpect(jsonPath("$[0].location", equalTo(result.get(0).location)))
+                .andExpect(jsonPath("$[0].status", equalTo(result.get(0).status)))
+                .andExpect(jsonPath("$[0].food", equalTo(result.get(0).food)))
+                .andExpect(jsonPath("$[0].cuisine", equalTo(result.get(0).cuisine)))
+        ;
+    }
+
+    @Test
+    @WithMockUser()
+    void testGetAvailableFilteredRestaurants_ByCuisine() throws Exception {
+        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni","username", "password", new AdminEntity("admin", "admin"));
+        RestaurantEntity restaurant2 = new RestaurantEntity(2, "name", "address", "location", "status", "Vegan", "Yemeni","username", "password", new AdminEntity("admin", "admin"));
+        RestaurantEntity restaurant3 = new RestaurantEntity(3, "name", "address", "location", "status", "Seafood", "Egyptian","username", "password", new AdminEntity("admin", "admin"));
+        RestaurantEntity restaurant4 = new RestaurantEntity(4, "name", "address", "location", "status", "Vegan", "Egyptian","username", "password", new AdminEntity("admin", "admin"));
+        List<RestaurantResource> result = new ArrayList<>();
+        result.add(restaurant1.toRestaurantResource());
+        result.add(restaurant2.toRestaurantResource());
+        when(restaurantService.getAvailableFilteredRestaurants(null,  "Yemeni"))
+                .thenReturn(result);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/restaurants")
+                        .param("cuisine","Yemeni"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].*", hasSize(7)))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].id", equalTo(((int) result.get(0).id))))
+                .andExpect(jsonPath("$[0].name", equalTo(result.get(0).name)))
+                .andExpect(jsonPath("$[0].address", equalTo(result.get(0).address)))
+                .andExpect(jsonPath("$[0].location", equalTo(result.get(0).location)))
+                .andExpect(jsonPath("$[0].status", equalTo(result.get(0).status)))
+                .andExpect(jsonPath("$[0].food", equalTo(result.get(0).food)))
+                .andExpect(jsonPath("$[0].cuisine", equalTo(result.get(0).cuisine)))
+        ;
+    }
+    @Test
+    @WithMockUser()
     void testCreateRestaurant_NotSystemAdmin() throws Exception {
         RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine","username", "password", new AdminEntity("", ""));
         ObjectMapper mapper = new ObjectMapper();
@@ -231,6 +317,7 @@ public class RestaurantControllerTest {
                         .content(statusJson).with(csrf()))
                 .andExpect(status().isOk());
     }
+
 
 
 }
