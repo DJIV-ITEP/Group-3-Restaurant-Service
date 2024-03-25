@@ -10,7 +10,9 @@ import java.util.Optional;
 
 public interface RestaurantService {
     List<RestaurantResource> getAvailableRestaurants();
-    List<RestaurantResource> getAvailableFilteredRestaurants(String food, String cuisine);
+    List<RestaurantResource> getAvailableFilteredRestaurantsByFoodAndCuisine(String food, String cuisine);
+    List<RestaurantResource> getAvailableFilteredRestaurantsByFood(String food);
+    List<RestaurantResource> getAvailableFilteredRestaurantsByCuisine(String cuisine);
     RestaurantResource createRestaurant(RestaurantEntity body) throws Exception;
 
     Optional<RestaurantResource> getRestaurantDetails(long restaurantId);

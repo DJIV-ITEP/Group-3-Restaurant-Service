@@ -93,7 +93,7 @@ public class RestaurantControllerTest {
         RestaurantEntity restaurant4 = new RestaurantEntity(4, "name", "address", "location", "status", "Vegan", "Egyptian",new UserEntity("owner", "owner"));
         List<RestaurantResource> result = new ArrayList<>();
         result.add(restaurant1.toRestaurantResource());
-        when(restaurantService.getAvailableFilteredRestaurants("Seafood", "Yemeni"))
+        when(restaurantService.getAvailableFilteredRestaurantsByFoodAndCuisine("Seafood", "Yemeni"))
                 .thenReturn(result);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/restaurants")
@@ -123,7 +123,7 @@ public class RestaurantControllerTest {
         List<RestaurantResource> result = new ArrayList<>();
         result.add(restaurant1.toRestaurantResource());
         result.add(restaurant3.toRestaurantResource());
-        when(restaurantService.getAvailableFilteredRestaurants("Seafood",  null))
+        when(restaurantService.getAvailableFilteredRestaurantsByFood("Seafood"))
                 .thenReturn(result);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/restaurants")
@@ -152,7 +152,7 @@ public class RestaurantControllerTest {
         List<RestaurantResource> result = new ArrayList<>();
         result.add(restaurant1.toRestaurantResource());
         result.add(restaurant2.toRestaurantResource());
-        when(restaurantService.getAvailableFilteredRestaurants(null,  "Yemeni"))
+        when(restaurantService.getAvailableFilteredRestaurantsByCuisine( "Yemeni"))
                 .thenReturn(result);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/restaurants")

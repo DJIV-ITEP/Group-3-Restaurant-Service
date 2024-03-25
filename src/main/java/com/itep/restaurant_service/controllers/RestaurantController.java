@@ -23,21 +23,24 @@ public class RestaurantController {
 
     @GetMapping("/restaurants")
     public ResponseEntity<Object> getRestaurants(@RequestParam(value = "food", required = false) String food, @RequestParam(value = "cuisine", required = false) String cuisine){
-        if (food == null && cuisine == null){
+        if ((food == null || food.isEmpty())
+                && (cuisine == null || cuisine.isEmpty())){
             return new ResponseEntity<>(
                     restaurantService.getAvailableRestaurants()
                     , HttpStatus.OK);
-        }
-        try {
+        } else if (food != null && !food.isEmpty()
+                && cuisine != null && !cuisine.isEmpty()) {
             return new ResponseEntity<>(
-                    restaurantService.getAvailableFilteredRestaurants(food, cuisine)
+                    restaurantService.getAvailableFilteredRestaurantsByFoodAndCuisine(food, cuisine)
                     , HttpStatus.OK);
-        } catch (Exception e) {
+        } else if (food != null && !food.isEmpty()) {
             return new ResponseEntity<>(
-                    Map.of("message",e.getMessage(),
-                            "status", 400)
-                    , HttpStatus.BAD_REQUEST);
-
+                    restaurantService.getAvailableFilteredRestaurantsByFood(food)
+                    , HttpStatus.OK);
+        }else {
+            return new ResponseEntity<>(
+                    restaurantService.getAvailableFilteredRestaurantsByCuisine(cuisine)
+                    , HttpStatus.OK);
         }
     }
 

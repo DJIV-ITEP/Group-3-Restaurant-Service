@@ -30,20 +30,24 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
-    public List<RestaurantResource> getAvailableFilteredRestaurants(String food, String cuisine) {
-        if (food != null && cuisine != null){
-            return restaurantRepository.findByFoodAndCuisineAndStatus(food, cuisine, "online") .stream()
-                    .map(RestaurantEntity::toRestaurantResource)
-                    .collect(Collectors.toList());
-        } else if (food != null) {
-            return restaurantRepository.findByFoodAndStatus(food, "online") .stream()
-                    .map(RestaurantEntity::toRestaurantResource)
-                    .collect(Collectors.toList());
-        } else {
-            return restaurantRepository.findByCuisineAndStatus(cuisine, "online") .stream()
-                    .map(RestaurantEntity::toRestaurantResource)
-                    .collect(Collectors.toList());
-        }
+    public List<RestaurantResource> getAvailableFilteredRestaurantsByFoodAndCuisine(String food, String cuisine) {
+        return restaurantRepository.findByFoodAndCuisineAndStatus(food, cuisine, "online") .stream()
+                .map(RestaurantEntity::toRestaurantResource)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<RestaurantResource> getAvailableFilteredRestaurantsByFood(String food) {
+        return restaurantRepository.findByFoodAndStatus(food, "online") .stream()
+                .map(RestaurantEntity::toRestaurantResource)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<RestaurantResource> getAvailableFilteredRestaurantsByCuisine(String cuisine) {
+        return restaurantRepository.findByCuisineAndStatus(cuisine, "online") .stream()
+                .map(RestaurantEntity::toRestaurantResource)
+                .collect(Collectors.toList());
     }
 
     @Override
