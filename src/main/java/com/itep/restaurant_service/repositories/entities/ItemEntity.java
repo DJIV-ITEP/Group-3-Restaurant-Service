@@ -20,6 +20,8 @@ public class ItemEntity {
     private long id;
     @Column(name = "name")
     private String name;
+    @Column(name = "description")
+    private String description;
     @Column(name = "price")
     private double price;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -34,6 +36,8 @@ public class ItemEntity {
                 .id(id)
                 .name(name)
                 .price(price)
+                .description(description)
+                .menu(menu.getId())
                 .build();
     }
 

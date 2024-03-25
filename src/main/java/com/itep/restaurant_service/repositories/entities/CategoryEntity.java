@@ -21,7 +21,7 @@ public class CategoryEntity {
     @Column(name = "name")
     private String name;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "restaurant_id")
+    @JoinColumn(name = "restaurant_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private RestaurantEntity restaurant;
 
@@ -30,6 +30,7 @@ public class CategoryEntity {
                 .builder()
                 .id(id)
                 .name(name)
+                .restaurant(restaurant.getId())
                 .build();
     }
 }
