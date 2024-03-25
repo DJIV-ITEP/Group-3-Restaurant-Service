@@ -58,6 +58,7 @@ public class MenuServiceImpl implements MenuService {
             else if (e.getMessage().contains("not-null property references a null")) {
                 throw new Exception("You must provide all the restaurant fields");
             }
+            System.out.println(e.getMessage());
             throw new Exception("unknown error");
         }
 

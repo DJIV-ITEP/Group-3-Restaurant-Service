@@ -1,7 +1,6 @@
 package com.itep.restaurant_service.repositories.entities;
 
 
-import com.itep.restaurant_service.models.DayResource;
 import com.itep.restaurant_service.models.ItemResource;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

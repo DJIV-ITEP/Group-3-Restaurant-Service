@@ -38,6 +38,16 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http   .authorizeHttpRequests((requests) -> requests
                         .requestMatchers(HttpMethod.POST,"/restaurants").authenticated()
+                        .requestMatchers(HttpMethod.POST,"/restaurants/{restaurantId}/status").authenticated()
+                        .requestMatchers(HttpMethod.POST,"/restaurants/{rest_id}/category").authenticated()
+                        .requestMatchers(HttpMethod.PUT,"/restaurants/{rest_id}/category/update/{id}").authenticated()
+                        .requestMatchers(HttpMethod.DELETE,"/restaurants/{rest_id}/category/delete/{id}").authenticated()
+                        .requestMatchers(HttpMethod.POST,"/restaurants/{rest_id}/category/{cat_id}/menus").authenticated()
+                        .requestMatchers(HttpMethod.PUT,"/restaurants/{rest_id}/category/{cat_id}/menus/update/{id}").authenticated()
+                        .requestMatchers(HttpMethod.DELETE,"/restaurants/{rest_id}/category/{cat_id}/menus/delete/{id}").authenticated()
+                        .requestMatchers(HttpMethod.POST,"/restaurants/{rest_id}/category/{cat_id}/menus/{menu_id}/item").authenticated()
+                        .requestMatchers(HttpMethod.PUT,"/restaurants/{rest_id}/category/{cat_id}/menus/{menu_id}/item/update/{id}").authenticated()
+                        .requestMatchers(HttpMethod.DELETE,"/restaurants/{rest_id}/category/{cat_id}/menus/{menu_id}/item/delete/{id}").authenticated()
                         .anyRequest().permitAll()
                 )
                 .logout(LogoutConfigurer::permitAll)

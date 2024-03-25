@@ -87,10 +87,10 @@ public class RestaurantControllerTest {
     @Test
     @WithMockUser()
     void testGetAvailableFilteredRestaurants_ByFoodAndCuisine() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni","username", "password", new AdminEntity("admin", "admin"));
-        RestaurantEntity restaurant2 = new RestaurantEntity(2, "name", "address", "location", "status", "Vegan", "Yemeni","username", "password", new AdminEntity("admin", "admin"));
-        RestaurantEntity restaurant3 = new RestaurantEntity(3, "name", "address", "location", "status", "Seafood", "Egyptian","username", "password", new AdminEntity("admin", "admin"));
-        RestaurantEntity restaurant4 = new RestaurantEntity(4, "name", "address", "location", "status", "Vegan", "Egyptian","username", "password", new AdminEntity("admin", "admin"));
+        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"));
+        RestaurantEntity restaurant2 = new RestaurantEntity(2, "name", "address", "location", "status", "Vegan", "Yemeni",new UserEntity("owner", "owner"));
+        RestaurantEntity restaurant3 = new RestaurantEntity(3, "name", "address", "location", "status", "Seafood", "Egyptian",new UserEntity("owner", "owner"));
+        RestaurantEntity restaurant4 = new RestaurantEntity(4, "name", "address", "location", "status", "Vegan", "Egyptian",new UserEntity("owner", "owner"));
         List<RestaurantResource> result = new ArrayList<>();
         result.add(restaurant1.toRestaurantResource());
         when(restaurantService.getAvailableFilteredRestaurants("Seafood", "Yemeni"))
@@ -116,10 +116,10 @@ public class RestaurantControllerTest {
     @Test
     @WithMockUser()
     void testGetAvailableFilteredRestaurants_ByFood() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni","username", "password", new AdminEntity("admin", "admin"));
-        RestaurantEntity restaurant2 = new RestaurantEntity(2, "name", "address", "location", "status", "Vegan", "Yemeni","username", "password", new AdminEntity("admin", "admin"));
-        RestaurantEntity restaurant3 = new RestaurantEntity(3, "name", "address", "location", "status", "Seafood", "Egyptian","username", "password", new AdminEntity("admin", "admin"));
-        RestaurantEntity restaurant4 = new RestaurantEntity(4, "name", "address", "location", "status", "Vegan", "Egyptian","username", "password", new AdminEntity("admin", "admin"));
+        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"));
+        RestaurantEntity restaurant2 = new RestaurantEntity(2, "name", "address", "location", "status", "Vegan", "Yemeni",new UserEntity("owner", "owner"));
+        RestaurantEntity restaurant3 = new RestaurantEntity(3, "name", "address", "location", "status", "Seafood", "Egyptian",new UserEntity("owner", "owner"));
+        RestaurantEntity restaurant4 = new RestaurantEntity(4, "name", "address", "location", "status", "Vegan", "Egyptian",new UserEntity("owner", "owner"));
         List<RestaurantResource> result = new ArrayList<>();
         result.add(restaurant1.toRestaurantResource());
         result.add(restaurant3.toRestaurantResource());
@@ -145,10 +145,10 @@ public class RestaurantControllerTest {
     @Test
     @WithMockUser()
     void testGetAvailableFilteredRestaurants_ByCuisine() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni","username", "password", new AdminEntity("admin", "admin"));
-        RestaurantEntity restaurant2 = new RestaurantEntity(2, "name", "address", "location", "status", "Vegan", "Yemeni","username", "password", new AdminEntity("admin", "admin"));
-        RestaurantEntity restaurant3 = new RestaurantEntity(3, "name", "address", "location", "status", "Seafood", "Egyptian","username", "password", new AdminEntity("admin", "admin"));
-        RestaurantEntity restaurant4 = new RestaurantEntity(4, "name", "address", "location", "status", "Vegan", "Egyptian","username", "password", new AdminEntity("admin", "admin"));
+        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"));
+        RestaurantEntity restaurant2 = new RestaurantEntity(2, "name", "address", "location", "status", "Vegan", "Yemeni",new UserEntity("owner", "owner"));
+        RestaurantEntity restaurant3 = new RestaurantEntity(3, "name", "address", "location", "status", "Seafood", "Egyptian",new UserEntity("owner", "owner"));
+        RestaurantEntity restaurant4 = new RestaurantEntity(4, "name", "address", "location", "status", "Vegan", "Egyptian",new UserEntity("owner", "owner"));
         List<RestaurantResource> result = new ArrayList<>();
         result.add(restaurant1.toRestaurantResource());
         result.add(restaurant2.toRestaurantResource());
