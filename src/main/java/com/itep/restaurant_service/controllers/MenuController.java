@@ -19,8 +19,8 @@ public class MenuController {
     }
 
     @GetMapping("/restaurants/{rest_id}/category/{cat_id}/menus")
-    public List<MenuResource> getMenus(){
-        return menuService.getAllMenues();
+    public List<MenuResource> getMenus(@PathVariable Long cat_id){
+        return menuService.getAllMenues(cat_id);
     }
 
 //    @GetMapping("/menus")
@@ -43,9 +43,9 @@ public class MenuController {
 //        }
 //    }
     @PostMapping("/restaurants/{rest_id}/category/{cat_id}/menus/create")
-    public ResponseEntity<Object> createMenu(@RequestBody MenuEntity addMenu){
+    public ResponseEntity<Object> createMenu(@PathVariable Long cat_id ,@RequestBody MenuEntity addMenu){
         try {
-            MenuResource addResource = menuService.createMenu(addMenu);
+            MenuResource addResource = menuService.createMenu(cat_id, addMenu);
             return ResponseEntity.ok(Map.of(
                     "message","Menu created successfully",
                     "status",200,

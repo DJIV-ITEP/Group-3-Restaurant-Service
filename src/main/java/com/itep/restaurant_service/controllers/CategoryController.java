@@ -2,8 +2,11 @@ package com.itep.restaurant_service.controllers;
 
 import com.itep.restaurant_service.models.CategoryResource;
 import com.itep.restaurant_service.models.MenuResource;
+import com.itep.restaurant_service.models.RestaurantResource;
+import com.itep.restaurant_service.repositories.RestaurantRepository;
 import com.itep.restaurant_service.repositories.entities.CategoryEntity;
 import com.itep.restaurant_service.repositories.entities.MenuEntity;
+import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
 import com.itep.restaurant_service.services.impl.CategoryServiceImpl;
 import com.itep.restaurant_service.services.impl.MenuServiceImpl;
 import org.springframework.http.HttpStatus;
@@ -25,9 +28,11 @@ public class CategoryController {
         return categoryService.getCategory(rest_id);
     }
     @PostMapping("/restaurants/{rest_id}/category/create")
-    public ResponseEntity<Object> createMenu(@RequestBody CategoryEntity addCatogery){
+    public ResponseEntity<Object> createCatogery(@PathVariable Long rest_id ,@RequestBody CategoryEntity addCatogery){
         try {
-            CategoryResource addResource = categoryService.createCategory(addCatogery);
+
+
+            CategoryResource addResource = categoryService.createCategory(rest_id,addCatogery);
             return ResponseEntity.ok(Map.of(
                     "message","Category created successfully",
                     "status",200,
@@ -44,7 +49,7 @@ public class CategoryController {
         }
     }
     @PutMapping("/restaurants/{rest_id}/category/update/{id}")
-    public ResponseEntity<Object> updateMenu(@PathVariable Long id, @RequestBody CategoryEntity updatedCategory) {
+    public ResponseEntity<Object> updateCatogery(@PathVariable Long id, @RequestBody CategoryEntity updatedCategory) {
         try {
             CategoryResource updatedResource = categoryService.updateCategory(id, updatedCategory);
             return ResponseEntity.ok(Map.of(

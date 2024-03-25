@@ -28,7 +28,7 @@ public class MenuEntity {
     private CategoryEntity category;
 
     @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "menu")
+    @JoinColumn(name = "menu_id", nullable = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private List<ItemEntity> items;
 
@@ -40,6 +40,8 @@ public class MenuEntity {
                 .builder()
                 .id(id)
                 .name(name)
+                .category(category.getId())
+                .items(items.stream().toList())
                 .build();
     }
 

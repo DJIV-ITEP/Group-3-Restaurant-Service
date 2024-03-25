@@ -2,7 +2,10 @@ package com.itep.restaurant_service.controllers;
 
 
 import com.itep.restaurant_service.models.ItemResource;
+import com.itep.restaurant_service.repositories.entities.CategoryEntity;
 import com.itep.restaurant_service.repositories.entities.ItemEntity;
+import com.itep.restaurant_service.repositories.entities.MenuEntity;
+import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
 import com.itep.restaurant_service.services.impl.MenuItemServiceImpl;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
@@ -29,13 +32,16 @@ public class MenuItemControllerTest {
     @Test
     public void testGetItems() {
         List<ItemResource> items = new ArrayList<>();
-        items.add(new ItemResource(/* Item details here */));
+        RestaurantEntity res = new RestaurantEntity();
+        CategoryEntity cat = new CategoryEntity(1L,"cat1",res);
+        MenuEntity men = new MenuEntity(1L,"menu 1", cat,null);
+        items.add(new ItemResource(1L , "item 1",1200,"the descrip of item", 1L));
 
         // Mock service method
-        Mockito.when(menuItemService.getAllItems()).thenReturn(items);
+        Mockito.when(menuItemService.getAllItems(1L)).thenReturn(items);
 
         // Call controller method
-        List<ItemResource> result = menuItemController.getItems();
+        List<ItemResource> result = menuItemController.getItems(1L);
 
         // Assert
         Assert.assertEquals(items, result);
@@ -46,14 +52,17 @@ public class MenuItemControllerTest {
     @Test
     public void testCreateItem() throws Exception{
         // Mock data
-        ItemEntity addItem = new ItemEntity(/* Item details here */);
-        ItemResource addResource = new ItemResource(/* Item details here */);
+        RestaurantEntity res = new RestaurantEntity();
+        CategoryEntity cat = new CategoryEntity(1L,"cat1",res);
+        MenuEntity men = new MenuEntity(1L,"menu 1", cat,null);
+        ItemEntity addItem = new ItemEntity(1L, "item 1", "description",1200, men);
+        ItemResource addResource = new ItemResource(1L, "item 2",1200,"descript",1L );
 
         // Mock service method
-        Mockito.when(menuItemService.createItem(addItem)).thenReturn(addResource);
+        Mockito.when(menuItemService.createItem(1L,addItem)).thenReturn(addResource);
 
         // Call controller method
-        ResponseEntity<Object> responseEntity = menuItemController.createItem(addItem);
+        ResponseEntity<Object> responseEntity = menuItemController.createItem(1L,addItem);
 
         // Assert
         Assert.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
@@ -64,8 +73,8 @@ public class MenuItemControllerTest {
     public void testUpdateItem() throws Exception{
         // Mock data
         Long id = 1L;
-        ItemEntity updatedItem = new ItemEntity(/* Updated item details here */);
-        ItemResource updatedResource = new ItemResource(/* Updated item details here */);
+        ItemEntity updatedItem = new ItemEntity();
+        ItemResource updatedResource = new ItemResource();
 
         // Mock service method
         Mockito.when(menuItemService.updateItem(id, updatedItem)).thenReturn(updatedResource);

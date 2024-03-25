@@ -24,13 +24,13 @@ public class MenuItemController {
     }
 
     @GetMapping("/restaurants/{rest_id}/category/{cat_id}/menus/{menu_id}/item")
-    public List<ItemResource> getItems(){
-        return menuItemService.getAllItems();
+    public List<ItemResource> getItems(@PathVariable Long menu_id){
+        return menuItemService.getAllItems(menu_id);
     }
     @PostMapping("/restaurants/{rest_id}/category/{cat_id}/menus/{menu_id}/item/create")
-    public ResponseEntity<Object> createItem(@RequestBody ItemEntity addItem){
+    public ResponseEntity<Object> createItem(@PathVariable Long menu_id,@RequestBody ItemEntity addItem){
         try{
-            ItemResource addResource = menuItemService.createItem(addItem);
+            ItemResource addResource = menuItemService.createItem(menu_id, addItem);
             return ResponseEntity.ok(Map.of(
                     "message","Menu Item created successfully",
                     "status",200,

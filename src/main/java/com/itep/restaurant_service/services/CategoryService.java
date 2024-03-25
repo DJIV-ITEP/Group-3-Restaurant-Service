@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface CategoryService {
     List<CategoryResource> getCategory(Long rest_id);
-    CategoryResource createCategory(CategoryEntity body) throws Exception;
+    CategoryResource createCategory(Long rest_id,CategoryEntity body) throws Exception;
 
     CategoryResource updateCategory(Long id, CategoryEntity body) throws Exception;
 

@@ -8,9 +8,9 @@ import com.itep.restaurant_service.repositories.entities.MenuEntity;
 import java.util.List;
 
 public interface MenuItemService {
-    List<ItemResource> getAllItems();
+    List<ItemResource> getAllItems(Long menu_id);
 
-    ItemResource createItem(ItemEntity body) throws Exception;
+    ItemResource createItem(Long menu_id, ItemEntity body) throws Exception;
 
     ItemResource updateItem(Long id, ItemEntity body) throws Exception;
 

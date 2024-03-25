@@ -11,6 +11,8 @@ import lombok.*;
 public class CategoryResource {
     private long id;
     private String name;
-    private RestaurantEntity restaurant;
+    private long restaurant;
+
+
 
 }

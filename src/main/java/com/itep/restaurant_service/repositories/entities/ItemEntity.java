@@ -36,6 +36,8 @@ public class ItemEntity {
                 .id(id)
                 .name(name)
                 .price(price)
+                .description(description)
+                .menu(menu.getId())
                 .build();
     }
 

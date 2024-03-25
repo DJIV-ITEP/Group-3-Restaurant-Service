@@ -1,36 +1,50 @@
 package com.itep.restaurant_service.services.impl;
 
 import com.itep.restaurant_service.models.ItemResource;
+import com.itep.restaurant_service.repositories.CategoryRepository;
 import com.itep.restaurant_service.repositories.MenuItemRepository;
 import com.itep.restaurant_service.repositories.MenuRepository;
+import com.itep.restaurant_service.repositories.entities.CategoryEntity;
 import com.itep.restaurant_service.repositories.entities.ItemEntity;
 import com.itep.restaurant_service.repositories.entities.MenuEntity;
 import com.itep.restaurant_service.services.MenuItemService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class MenuItemServiceImpl implements MenuItemService {
-    private final MenuItemRepository menuItemRepository;
+    @Autowired
+    private MenuItemRepository menuItemRepository;
 
-    public MenuItemServiceImpl(MenuItemRepository menuItemRepository) {
-        this.menuItemRepository = menuItemRepository;
-    }
+    @Autowired
+    private MenuRepository menuRepository;
 
     @Override
-    public List<ItemResource> getAllItems() {
-        return menuItemRepository.findAll().stream()
+    public List<ItemResource> getAllItems(Long menu_id) {
+        return menuItemRepository.findByMenuId(menu_id).stream()
                 .map(ItemEntity::toItemResource)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public ItemResource createItem(ItemEntity body) throws Exception {
+    public ItemResource createItem(Long menu_id, ItemEntity body) throws Exception {
         try{
-            return menuItemRepository.save(body).toItemResource();
+            Optional<MenuEntity> yourEntityOptional = menuRepository.findById(menu_id);
+            if (yourEntityOptional.isPresent()) {
+                MenuEntity yourEntity = yourEntityOptional.get();
+                body.setMenu(yourEntity);
+
+                return menuItemRepository.save(body).toItemResource();
+            }
+            else{
+                throw new EntityNotFoundException("Category with id " + menu_id + " not found");
+            }
+
         }
         catch (Exception e){
             if(e.getMessage().contains("duplicate key value violates unique constraint")){

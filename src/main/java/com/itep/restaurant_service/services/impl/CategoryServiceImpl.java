@@ -3,34 +3,57 @@ package com.itep.restaurant_service.services.impl;
 import com.itep.restaurant_service.models.CategoryResource;
 import com.itep.restaurant_service.repositories.CategoryRepository;
 import com.itep.restaurant_service.repositories.MenuRepository;
+import com.itep.restaurant_service.repositories.RestaurantRepository;
 import com.itep.restaurant_service.repositories.entities.CategoryEntity;
 import com.itep.restaurant_service.repositories.entities.MenuEntity;
+import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
 import com.itep.restaurant_service.services.CategoryService;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
-    private final CategoryRepository categoryRepository;
-    public CategoryServiceImpl(CategoryRepository categoryRepository) {
-        this.categoryRepository = categoryRepository;
-    }
+//    private final CategoryRepository categoryRepository;
+//    public CategoryServiceImpl(CategoryRepository categoryRepository) {
+//        this.categoryRepository = categoryRepository;
+//    }
 
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+    @Autowired
+    private RestaurantRepository restaurantRepository;
     @Override
     public List<CategoryResource> getCategory(Long rest_id) {
-//        return categoryRepository.findBy()
-
-        return categoryRepository.findAll().stream()
+        return categoryRepository.findByRestaurantId(rest_id).stream()
                 .map(CategoryEntity::toCategoryResource)
                 .collect(Collectors.toList());
+
+//        return categoryRepository.findAll().stream()
+//                .map(CategoryEntity::toCategoryResource)
+//                .collect(Collectors.toList());
     }
 
     @Override
-    public CategoryResource createCategory(CategoryEntity body) throws Exception {
+    public CategoryResource createCategory(Long rest_id, CategoryEntity body) throws Exception {
         try{
-            return categoryRepository.save(body).toCategoryResource();
+            Optional<RestaurantEntity> yourEntityOptional = restaurantRepository.findById(rest_id);
+            if (yourEntityOptional.isPresent()) {
+                RestaurantEntity yourEntity = yourEntityOptional.get();
+                body.setRestaurant(yourEntity);
+
+                return categoryRepository.save(body).toCategoryResource();
+            }
+            else{
+                throw new EntityNotFoundException("Restaurant with id " + rest_id + " not found");
+            }
+
         }catch (Exception e){
             if(e.getMessage().contains("duplicate key value violates unique constraint")){
                 throw new Exception("category with this name already exists");
@@ -64,4 +87,5 @@ public class CategoryServiceImpl implements CategoryService {
 
         }
     }
+
 }
