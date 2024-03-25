@@ -13,7 +13,7 @@ import java.util.Collection;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
+@Entity(name = "restaurants")
 @Table(name = "restaurants")
 public class RestaurantEntity {
     @Id
@@ -51,8 +51,8 @@ public class RestaurantEntity {
                 .status(status)
                 .food(food)
                 .cuisine(cuisine)
-                .username(username)
-                .password(password)
+//                .username(username)
+//                .password(password)
                 .build();
     }
 

@@ -10,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,5 +44,22 @@ public class RestaurantServiceImpl implements RestaurantService {
             throw new Exception("unknown error");
         }
 
+    }
+
+    @Override
+    public Optional<RestaurantResource> getRestaurantDetails(long restaurantId) {
+        Optional<RestaurantEntity> restaurantEntity = restaurantRepository.findById(restaurantId);
+        return restaurantEntity.map(RestaurantEntity::toRestaurantResource);
+    }
+
+    @Override
+    public Optional<RestaurantResource> getRestaurantByUsername(String username) {
+        Optional<RestaurantEntity> restaurantEntity = restaurantRepository.findByUsername(username);
+        return restaurantEntity.map(RestaurantEntity::toRestaurantResource);
+    }
+
+    @Override
+    public void setRestaurantStatus(long id, String status) {
+        restaurantRepository.updateStatus(id, status);
     }
 }
