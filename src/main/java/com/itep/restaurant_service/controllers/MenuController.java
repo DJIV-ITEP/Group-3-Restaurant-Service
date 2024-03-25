@@ -5,6 +5,7 @@ import com.itep.restaurant_service.repositories.entities.MenuEntity;
 import com.itep.restaurant_service.services.impl.MenuServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,7 +43,8 @@ public class MenuController {
 //
 //        }
 //    }
-    @PostMapping("/restaurants/{rest_id}/category/{cat_id}/menus/create")
+    @PreAuthorize("hasRole('ROLE_RESTAURANT')")
+    @PostMapping("/restaurants/{rest_id}/category/{cat_id}/menus")
     public ResponseEntity<Object> createMenu(@PathVariable Long cat_id ,@RequestBody MenuEntity addMenu){
         try {
             MenuResource addResource = menuService.createMenu(cat_id, addMenu);
@@ -61,6 +63,7 @@ public class MenuController {
 
         }
     }
+    @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @PutMapping("/restaurants/{rest_id}/category/{cat_id}/menus/update/{id}")
     public ResponseEntity<Object> updateMenu(@PathVariable Long id, @RequestBody MenuEntity updatedMenu) {
         try {
@@ -76,7 +79,7 @@ public class MenuController {
             );
         }
     }
-
+    @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @DeleteMapping("/restaurants/{rest_id}/category/{cat_id}/menus/delete/{id}")
     public ResponseEntity<Object> deleteMenu(@PathVariable Long id) {
         try {

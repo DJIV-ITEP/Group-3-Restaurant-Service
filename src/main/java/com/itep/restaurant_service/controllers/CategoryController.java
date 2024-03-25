@@ -11,6 +11,7 @@ import com.itep.restaurant_service.services.impl.CategoryServiceImpl;
 import com.itep.restaurant_service.services.impl.MenuServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,7 +28,8 @@ public class CategoryController {
     public List<CategoryResource> getCategory(@PathVariable Long rest_id){
         return categoryService.getCategory(rest_id);
     }
-    @PostMapping("/restaurants/{rest_id}/category/create")
+    @PreAuthorize("hasRole('ROLE_RESTAURANT')")
+    @PostMapping("/restaurants/{rest_id}/category")
     public ResponseEntity<Object> createCatogery(@PathVariable Long rest_id ,@RequestBody CategoryEntity addCatogery){
         try {
 
@@ -48,6 +50,7 @@ public class CategoryController {
 
         }
     }
+    @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @PutMapping("/restaurants/{rest_id}/category/update/{id}")
     public ResponseEntity<Object> updateCatogery(@PathVariable Long id, @RequestBody CategoryEntity updatedCategory) {
         try {
@@ -64,6 +67,7 @@ public class CategoryController {
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @DeleteMapping("/restaurants/{rest_id}/category/delete/{id}")
     public ResponseEntity<Object> deleteCatogery(@PathVariable Long id) {
         try {

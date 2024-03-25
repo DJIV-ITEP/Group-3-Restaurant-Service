@@ -10,6 +10,7 @@ import com.itep.restaurant_service.services.impl.MenuServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,7 +28,8 @@ public class MenuItemController {
     public List<ItemResource> getItems(@PathVariable Long menu_id){
         return menuItemService.getAllItems(menu_id);
     }
-    @PostMapping("/restaurants/{rest_id}/category/{cat_id}/menus/{menu_id}/item/create")
+    @PreAuthorize("hasRole('ROLE_RESTAURANT')")
+    @PostMapping("/restaurants/{rest_id}/category/{cat_id}/menus/{menu_id}/item")
     public ResponseEntity<Object> createItem(@PathVariable Long menu_id,@RequestBody ItemEntity addItem){
         try{
             ItemResource addResource = menuItemService.createItem(menu_id, addItem);
@@ -44,7 +46,7 @@ public class MenuItemController {
             );
         }
     }
-
+    @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @PutMapping("/restaurants/{rest_id}/category/{cat_id}/menus/{menu_id}/item/update/{id}")
     public  ResponseEntity<Object> updateItem(@PathVariable Long id, @RequestBody ItemEntity updatedItem){
         try {
@@ -60,7 +62,7 @@ public class MenuItemController {
             );
         }
     }
-
+    @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @DeleteMapping("/restaurants/{rest_id}/category/{cat_id}/menus/{menu_id}/item/delete/{id}")
     public ResponseEntity<Object> deleteItem(@PathVariable Long id) {
         try {
