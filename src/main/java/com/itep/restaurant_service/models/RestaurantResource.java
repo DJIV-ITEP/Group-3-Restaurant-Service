@@ -15,7 +15,4 @@ public class RestaurantResource {
     public String status="offline";
     public String food;
     public String cuisine;
-//    Hide These information
-//    public String username;
-//    public String password;
 }

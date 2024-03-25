@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.util.Collection;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -31,14 +30,11 @@ public class RestaurantEntity {
     private String food;
     @Column(name = "cuisine", nullable = false)
     private String cuisine;
-    @Column(name = "username", nullable = false, unique = true)
-    private String username;
-    @Column(name = "password", nullable = false)
-    private String password;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "added_by")
-    @OnDelete(action = OnDeleteAction.NO_ACTION)
-    private AdminEntity added_by;
+
+    @OneToOne
+    @JoinColumn(name = "owner", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private UserEntity owner;
 
 
     public RestaurantResource toRestaurantResource() {
@@ -51,8 +47,6 @@ public class RestaurantEntity {
                 .status(status)
                 .food(food)
                 .cuisine(cuisine)
-//                .username(username)
-//                .password(password)
                 .build();
     }
 

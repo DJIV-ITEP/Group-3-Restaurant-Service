@@ -86,19 +86,13 @@ public class RestaurantController {
         }
         // check if the updated restaurant belong to the user who wants to update
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        var userRestaurant = restaurantService.getRestaurantByUsername(auth.getName());
-        if (userRestaurant.isEmpty()){
-            return new ResponseEntity<>(
-                    Map.of("message", "Your restaurant information not found",
-                            "status", 404),
-                    HttpStatus.NOT_FOUND);
-
-        }
-        if(restaurantResource.get().id != userRestaurant.get().id){
+        var owner = restaurantService.getRestaurantOwner(restaurantId);
+        if (!auth.getName().equals(owner.get().getUsername())){
             return new ResponseEntity<>(
                     Map.of("message", "You don't have the permission to update this restaurant",
                             "status", 400),
                     HttpStatus.BAD_REQUEST);
+
         }
 
         String status = body.get("status").toString();

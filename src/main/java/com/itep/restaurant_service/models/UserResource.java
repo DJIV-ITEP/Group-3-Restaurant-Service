@@ -7,7 +7,7 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
-public class AdminResource {
+public class UserResource {
     private String username;
     private String password;
 
