@@ -23,7 +23,8 @@ public class MenuItemServiceImpl implements MenuItemService {
 
     @Autowired
     private MenuRepository menuRepository;
-
+    @Autowired
+    private CategoryRepository categoryRepository;
     @Override
     public List<ItemResource> getAllItems(Long menu_id) {
         return menuItemRepository.findByMenuId(menu_id).stream()
@@ -32,52 +33,111 @@ public class MenuItemServiceImpl implements MenuItemService {
     }
 
     @Override
-    public ItemResource createItem(Long menu_id, ItemEntity body) throws Exception {
-        try{
-            Optional<MenuEntity> yourEntityOptional = menuRepository.findById(menu_id);
-            if (yourEntityOptional.isPresent()) {
-                MenuEntity yourEntity = yourEntityOptional.get();
-                body.setMenu(yourEntity);
+    public ItemResource createItem(Long rest_id,Long cat_id,Long menu_id, ItemEntity body) throws Exception {
+        Optional<MenuEntity> yourEntityOptional = menuRepository.findById(menu_id);
+        if (yourEntityOptional.isPresent()) {
+            MenuEntity yourEntity = yourEntityOptional.get();
+            if(yourEntity.getCategory().getId() == cat_id){
+                if(yourEntity.getCategory().getRestaurant().getId() == rest_id){
+                    try{
+                        body.setMenu(yourEntity);
+                        return menuItemRepository.save(body).toItemResource();
 
-                return menuItemRepository.save(body).toItemResource();
+                    }
+                    catch (Exception e){
+                        if(e.getMessage().contains("duplicate key value violates unique constraint")){
+                            throw new Exception("item already exists");
+                        }
+                        else if (e.getMessage().contains("not-null property references a null")) {
+                            throw new Exception("You must provide all the item fields");
+                        }
+                        throw new Exception("unknown error");
+                    }
+                }
+                else{
+                    throw new EntityNotFoundException("Category with id " + cat_id + " not belong to Restaurant");
+                }
             }
             else{
-                throw new EntityNotFoundException("Category with id " + menu_id + " not found");
+                throw new EntityNotFoundException("Menu with id " + menu_id + " not belong to Category");
             }
 
         }
-        catch (Exception e){
-            if(e.getMessage().contains("duplicate key value violates unique constraint")){
-                throw new Exception("restaurant with this username already exists");
-            }
-            else if (e.getMessage().contains("not-null property references a null")) {
-                throw new Exception("You must provide all the restaurant fields");
-            }
-            throw new Exception("unknown error");
+        else{
+            throw new EntityNotFoundException("Menu with id " + menu_id + " not found");
         }
+
+
+
+
+
     }
 
     @Override
-    public ItemResource updateItem(Long id, ItemEntity body) throws Exception {
+    public ItemResource updateItem(Long rest_id,Long cat_id,Long menu_id,Long id, ItemEntity body) throws Exception {
         ItemEntity existItem = menuItemRepository.findById(id)
                 .orElseThrow(() -> new Exception("item not found"));
-        existItem.setName(body.getName());
-        existItem.setDescription(body.getDescription());
-        existItem.setPrice(body.getPrice());
-        try {
-            return menuItemRepository.save(existItem).toItemResource();
-        } catch (Exception e) {
-            throw new Exception("Failed to update item");
+        if(existItem.getMenu().getId() == menu_id){
+            if(existItem.getMenu().getCategory().getId() == cat_id){
+                if(existItem.getMenu().getCategory().getRestaurant().getId() == rest_id){
+                    try{
+                        existItem.setName(body.getName());
+                        existItem.setDescription(body.getDescription());
+                        existItem.setPrice(body.getPrice());
+                        return menuItemRepository.save(existItem).toItemResource();
+                    }
+                    catch (Exception e) {
+                        throw new Exception("Failed to update item");
+                    }
+                }
+                else{
+                    throw new EntityNotFoundException("Category with id " + cat_id + " not belong to Restaurant");
+                }
+            }
+            else{
+                throw new EntityNotFoundException("Menu with id " + menu_id + " not belong to Category");
+            }
         }
+        else{
+            throw new EntityNotFoundException("item with id " + id + " not belong to Menu");
+        }
+
+
     }
 
     @Override
-    public void deleteItem(Long id) throws Exception {
-        try{
-            menuItemRepository.deleteById(id);
+    public void deleteItem(Long rest_id,Long cat_id,Long menu_id,Long id) throws Exception {
+        Optional<ItemEntity> yourEntityOptional = menuItemRepository.findById(menu_id);
+        if (yourEntityOptional.isPresent()) {
+            ItemEntity yourEntity = yourEntityOptional.get();
+            if(yourEntity.getMenu().getId() == menu_id){
+                if(yourEntity.getMenu().getCategory().getId() == cat_id){
+                    if(yourEntity.getMenu().getCategory().getRestaurant().getId() == rest_id){
+                        try{
+                            menuItemRepository.deleteById(id);
+                        }
+                        catch (Exception e){
+                            throw new Exception(e.getMessage());
+                        }
+
+                    }
+                    else {
+                        throw new EntityNotFoundException("Category with id " + cat_id + " not belong to Restaurant");
+                    }
+
+                }
+                else {
+                    throw new EntityNotFoundException("Menu with id " + menu_id + " not belong to Category");
+                }
+
+            }
+            else {
+                throw new EntityNotFoundException("item with id " + id + " not belong to Menu");
+            }
         }
-        catch (Exception e){
-            throw new Exception(e.getMessage());
+        else{
+            throw new EntityNotFoundException("item with id " + id + " not found");
         }
+
     }
 }

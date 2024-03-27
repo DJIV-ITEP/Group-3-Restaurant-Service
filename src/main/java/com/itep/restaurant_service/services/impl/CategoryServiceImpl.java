@@ -35,9 +35,6 @@ public class CategoryServiceImpl implements CategoryService {
                 .map(CategoryEntity::toCategoryResource)
                 .collect(Collectors.toList());
 
-//        return categoryRepository.findAll().stream()
-//                .map(CategoryEntity::toCategoryResource)
-//                .collect(Collectors.toList());
     }
 
     @Override

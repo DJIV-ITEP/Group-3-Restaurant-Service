@@ -10,9 +10,9 @@ import java.util.List;
 public interface MenuItemService {
     List<ItemResource> getAllItems(Long menu_id);
 
-    ItemResource createItem(Long menu_id, ItemEntity body) throws Exception;
+    ItemResource createItem(Long rest_id,Long cat_id,Long menu_id, ItemEntity body) throws Exception;
 
-    ItemResource updateItem(Long id, ItemEntity body) throws Exception;
+    ItemResource updateItem(Long rest_id,Long cat_id,Long menu_id,Long id, ItemEntity body) throws Exception;
 
-    void deleteItem(Long id) throws Exception;
+    void deleteItem(Long rest_id,Long cat_id,Long menu_id,Long id) throws Exception;
 }

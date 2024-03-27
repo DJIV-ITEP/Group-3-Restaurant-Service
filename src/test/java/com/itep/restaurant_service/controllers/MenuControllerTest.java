@@ -38,7 +38,7 @@ public class MenuControllerTest {
         menus.add(new MenuResource(1L, "Menu 1",cat));
         menus.add(new MenuResource(2L, "Menu 2",cat));
 
-        Mockito.when(menuService.getAllMenues(1L)).thenReturn(menus);
+        Mockito.when(menuService.getMenues(1L)).thenReturn(menus);
 
         List<MenuResource> result = menuController.getMenus(1L);
 
@@ -54,9 +54,9 @@ public class MenuControllerTest {
         CategoryEntity cat = new CategoryEntity(1L,"cat1",res);
         MenuResource newMenuResource = new MenuResource(1L, "New Menu",cat);
 
-        Mockito.when(menuService.createMenu(1L,Mockito.any(MenuEntity.class))).thenReturn(newMenuResource);
+        Mockito.when(menuService.createMenu(1L,1L,Mockito.any(MenuEntity.class))).thenReturn(newMenuResource);
 
-        ResponseEntity<Object> response = menuController.createMenu(1L,newMenu);
+        ResponseEntity<Object> response = menuController.createMenu(1L,1L,newMenu);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Menu created successfully", ((Map<?, ?>) response.getBody()).get("message"));
@@ -65,14 +65,16 @@ public class MenuControllerTest {
     @Test
     public void testUpdateMenu() throws Exception {
         long id = 1L;
+        long rest_id = 1L;
+        long cat_id = 1L;
         MenuEntity updatedMenu = new MenuEntity("Updated Menu");
         RestaurantEntity res = new RestaurantEntity();
         CategoryEntity cat = new CategoryEntity(1L,"cat1",res);
         MenuResource updatedMenuResource = new MenuResource(id, "Updated Menu",cat);
 
-        Mockito.when(menuService.updateMenu(Mockito.eq(id), Mockito.any(MenuEntity.class))).thenReturn(updatedMenuResource);
+        Mockito.when(menuService.updateMenu(Mockito.eq(rest_id),Mockito.eq(cat_id),Mockito.eq(id), Mockito.any(MenuEntity.class))).thenReturn(updatedMenuResource);
 
-        ResponseEntity<Object> response = menuController.updateMenu(id, updatedMenu);
+        ResponseEntity<Object> response = menuController.updateMenu(rest_id,cat_id,id, updatedMenu);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Menu updated successfully", ((Map<?, ?>) response.getBody()).get("message"));
@@ -81,8 +83,10 @@ public class MenuControllerTest {
     @Test
     public void testDeleteMenu() throws Exception {
         long id = 1L;
+        long rest_id = 1L;
+        long cat_id = 1L;
 
-        ResponseEntity<Object> response = menuController.deleteMenu(id);
+        ResponseEntity<Object> response = menuController.deleteMenu(rest_id,cat_id,id);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Menu deleted successfully", ((Map<?, ?>) response.getBody()).get("message"));

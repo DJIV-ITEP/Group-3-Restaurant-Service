@@ -21,7 +21,7 @@ public class MenuController {
 
     @GetMapping("/restaurants/{rest_id}/category/{cat_id}/menus")
     public List<MenuResource> getMenus(@PathVariable Long cat_id){
-        return menuService.getAllMenues(cat_id);
+        return menuService.getMenues(cat_id);
     }
 
 //    @GetMapping("/menus")
@@ -45,9 +45,9 @@ public class MenuController {
 //    }
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @PostMapping("/restaurants/{rest_id}/category/{cat_id}/menus")
-    public ResponseEntity<Object> createMenu(@PathVariable Long cat_id ,@RequestBody MenuEntity addMenu){
+    public ResponseEntity<Object> createMenu(@PathVariable Long rest_id, @PathVariable Long cat_id ,@RequestBody MenuEntity addMenu){
         try {
-            MenuResource addResource = menuService.createMenu(cat_id, addMenu);
+            MenuResource addResource = menuService.createMenu(rest_id,cat_id, addMenu);
             return ResponseEntity.ok(Map.of(
                     "message","Menu created successfully",
                     "status",200,
@@ -65,9 +65,9 @@ public class MenuController {
     }
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @PutMapping("/restaurants/{rest_id}/category/{cat_id}/menus/update/{id}")
-    public ResponseEntity<Object> updateMenu(@PathVariable Long id, @RequestBody MenuEntity updatedMenu) {
+    public ResponseEntity<Object> updateMenu(@PathVariable Long rest_id,@PathVariable Long cat_id,@PathVariable Long id, @RequestBody MenuEntity updatedMenu) {
         try {
-            MenuResource updatedResource = menuService.updateMenu(id, updatedMenu);
+            MenuResource updatedResource = menuService.updateMenu(rest_id,cat_id,id, updatedMenu);
             return ResponseEntity.ok(Map.of(
                     "message", "Menu updated successfully",
                     "status", 200,
@@ -81,9 +81,9 @@ public class MenuController {
     }
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @DeleteMapping("/restaurants/{rest_id}/category/{cat_id}/menus/delete/{id}")
-    public ResponseEntity<Object> deleteMenu(@PathVariable Long id) {
+    public ResponseEntity<Object> deleteMenu(@PathVariable Long rest_id, @PathVariable Long cat_id,@PathVariable Long id) {
         try {
-            menuService.deleteMenu(id);
+            menuService.deleteMenu(rest_id,cat_id,id);
             return ResponseEntity.ok(Map.of(
                     "message", "Menu deleted successfully",
                     "status", 200

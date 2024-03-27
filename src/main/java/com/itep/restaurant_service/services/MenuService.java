@@ -6,11 +6,11 @@ import com.itep.restaurant_service.repositories.entities.MenuEntity;
 import java.util.List;
 
 public interface MenuService {
-    List<MenuResource> getAllMenues(Long cat_id);
+    List<MenuResource> getMenues(Long cat_id);
 
-    MenuResource createMenu(Long cat_id, MenuEntity body) throws Exception;
+    MenuResource createMenu(Long rest_id,Long cat_id, MenuEntity body) throws Exception;
 
-    MenuResource updateMenu(Long id, MenuEntity body) throws Exception;
+    MenuResource updateMenu(Long rest_id, Long cat_id,Long id, MenuEntity body) throws Exception;
 
-    void deleteMenu(Long id) throws Exception;
+    void deleteMenu(Long rest_id, Long cat_id,Long id) throws Exception;
 }
