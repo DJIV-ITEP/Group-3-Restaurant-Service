@@ -59,10 +59,10 @@ public class MenuItemControllerTest {
         ItemResource addResource = new ItemResource(1L, "item 2",1200,"descript",1L );
 
         // Mock service method
-        Mockito.when(menuItemService.createItem(1L,addItem)).thenReturn(addResource);
+        Mockito.when(menuItemService.createItem(1L,1L,1L,addItem)).thenReturn(addResource);
 
         // Call controller method
-        ResponseEntity<Object> responseEntity = menuItemController.createItem(1L,addItem);
+        ResponseEntity<Object> responseEntity = menuItemController.createItem(1L,1L,1L,addItem);
 
         // Assert
         Assert.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
@@ -73,14 +73,17 @@ public class MenuItemControllerTest {
     public void testUpdateItem() throws Exception{
         // Mock data
         Long id = 1L;
+        Long rest_id = 1L;
+        Long cat_id = 1L;
+        Long menu_id = 1L;
         ItemEntity updatedItem = new ItemEntity();
         ItemResource updatedResource = new ItemResource();
 
         // Mock service method
-        Mockito.when(menuItemService.updateItem(id, updatedItem)).thenReturn(updatedResource);
+        Mockito.when(menuItemService.updateItem(rest_id,cat_id,menu_id,id, updatedItem)).thenReturn(updatedResource);
 
         // Call controller method
-        ResponseEntity<Object> responseEntity = menuItemController.updateItem(id, updatedItem);
+        ResponseEntity<Object> responseEntity = menuItemController.updateItem(rest_id,cat_id,menu_id,id, updatedItem);
 
         // Assert
         Assert.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
@@ -90,10 +93,13 @@ public class MenuItemControllerTest {
     @Test
     public void testDeleteItem() {
         // Mock data
+        Long rest_id = 1L;
+        Long cat_id = 1L;
+        Long menu_id = 1L;
         Long id = 1L;
 
         // Call controller method
-        ResponseEntity<Object> responseEntity = menuItemController.deleteItem(id);
+        ResponseEntity<Object> responseEntity = menuItemController.deleteItem(rest_id,cat_id,menu_id,id);
 
         // Assert
         Assert.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());

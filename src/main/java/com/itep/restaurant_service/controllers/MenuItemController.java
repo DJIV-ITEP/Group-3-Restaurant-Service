@@ -30,9 +30,9 @@ public class MenuItemController {
     }
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @PostMapping("/restaurants/{rest_id}/category/{cat_id}/menus/{menu_id}/item")
-    public ResponseEntity<Object> createItem(@PathVariable Long menu_id,@RequestBody ItemEntity addItem){
+    public ResponseEntity<Object> createItem(@PathVariable Long rest_id,@PathVariable Long cat_id,@PathVariable Long menu_id,@RequestBody ItemEntity addItem){
         try{
-            ItemResource addResource = menuItemService.createItem(menu_id, addItem);
+            ItemResource addResource = menuItemService.createItem(rest_id,cat_id,menu_id, addItem);
             return ResponseEntity.ok(Map.of(
                     "message","Menu Item created successfully",
                     "status",200,
@@ -48,9 +48,9 @@ public class MenuItemController {
     }
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @PutMapping("/restaurants/{rest_id}/category/{cat_id}/menus/{menu_id}/item/update/{id}")
-    public  ResponseEntity<Object> updateItem(@PathVariable Long id, @RequestBody ItemEntity updatedItem){
+    public  ResponseEntity<Object> updateItem(@PathVariable Long rest_id,@PathVariable Long cat_id,@PathVariable Long menu_id,@PathVariable Long id, @RequestBody ItemEntity updatedItem){
         try {
-            ItemResource updatedResource = menuItemService.updateItem(id, updatedItem);
+            ItemResource updatedResource = menuItemService.updateItem(rest_id,cat_id,menu_id,id, updatedItem);
             return ResponseEntity.ok(Map.of(
                     "message", "Menu Item updated successfully",
                     "status", 200,
@@ -64,9 +64,9 @@ public class MenuItemController {
     }
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @DeleteMapping("/restaurants/{rest_id}/category/{cat_id}/menus/{menu_id}/item/delete/{id}")
-    public ResponseEntity<Object> deleteItem(@PathVariable Long id) {
+    public ResponseEntity<Object> deleteItem(@PathVariable Long rest_id,@PathVariable Long cat_id,@PathVariable Long menu_id,@PathVariable Long id) {
         try {
-            menuItemService.deleteItem(id);
+            menuItemService.deleteItem(rest_id,cat_id,menu_id,id);
             return ResponseEntity.ok(Map.of(
                     "message", "Menu deleted successfully",
                     "status", 200
