@@ -11,7 +11,7 @@ public interface CategoryService {
     List<CategoryResource> getCategory(Long rest_id);
     CategoryResource createCategory(Long rest_id,CategoryEntity body) throws Exception;
 
-    CategoryResource updateCategory(Long id, CategoryEntity body) throws Exception;
+    CategoryResource updateCategory(Long rest_id,Long id, CategoryEntity body) throws Exception;
 
-    void deleteCategory(Long id) throws Exception;
+    void deleteCategory(Long rest_id,Long id) throws Exception;
 }

@@ -10,9 +10,12 @@ import com.itep.restaurant_service.repositories.entities.MenuEntity;
 import com.itep.restaurant_service.services.MenuItemService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -34,25 +37,35 @@ public class MenuItemServiceImpl implements MenuItemService {
 
     @Override
     public ItemResource createItem(Long rest_id,Long cat_id,Long menu_id, ItemEntity body) throws Exception {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // Get the username of the current user
+        String username = authentication.getName();
         Optional<MenuEntity> yourEntityOptional = menuRepository.findById(menu_id);
         if (yourEntityOptional.isPresent()) {
             MenuEntity yourEntity = yourEntityOptional.get();
             if(yourEntity.getCategory().getId() == cat_id){
                 if(yourEntity.getCategory().getRestaurant().getId() == rest_id){
-                    try{
-                        body.setMenu(yourEntity);
-                        return menuItemRepository.save(body).toItemResource();
+                    if(Objects.equals(yourEntity.getCategory().getRestaurant().getOwner().getUsername(), username)){
+                        try{
+                            body.setMenu(yourEntity);
+                            return menuItemRepository.save(body).toItemResource();
 
-                    }
-                    catch (Exception e){
-                        if(e.getMessage().contains("duplicate key value violates unique constraint")){
-                            throw new Exception("item already exists");
                         }
-                        else if (e.getMessage().contains("not-null property references a null")) {
-                            throw new Exception("You must provide all the item fields");
+                        catch (Exception e){
+                            if(e.getMessage().contains("duplicate key value violates unique constraint")){
+                                throw new Exception("item already exists");
+                            }
+                            else if (e.getMessage().contains("not-null property references a null")) {
+                                throw new Exception("You must provide all the item fields");
+                            }
+                            throw new Exception("unknown error");
                         }
-                        throw new Exception("unknown error");
                     }
+                    else{
+                        throw new EntityNotFoundException("you are not the owner of Restaurant");
+                    }
+
                 }
                 else{
                     throw new EntityNotFoundException("Category with id " + cat_id + " not belong to Restaurant");
@@ -75,20 +88,30 @@ public class MenuItemServiceImpl implements MenuItemService {
 
     @Override
     public ItemResource updateItem(Long rest_id,Long cat_id,Long menu_id,Long id, ItemEntity body) throws Exception {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // Get the username of the current user
+        String username = authentication.getName();
         ItemEntity existItem = menuItemRepository.findById(id)
                 .orElseThrow(() -> new Exception("item not found"));
         if(existItem.getMenu().getId() == menu_id){
             if(existItem.getMenu().getCategory().getId() == cat_id){
                 if(existItem.getMenu().getCategory().getRestaurant().getId() == rest_id){
-                    try{
-                        existItem.setName(body.getName());
-                        existItem.setDescription(body.getDescription());
-                        existItem.setPrice(body.getPrice());
-                        return menuItemRepository.save(existItem).toItemResource();
+                    if(Objects.equals(existItem.getMenu().getCategory().getRestaurant().getOwner().getUsername(), username)){
+                        try{
+                            existItem.setName(body.getName());
+                            existItem.setDescription(body.getDescription());
+                            existItem.setPrice(body.getPrice());
+                            return menuItemRepository.save(existItem).toItemResource();
+                        }
+                        catch (Exception e) {
+                            throw new Exception("Failed to update item");
+                        }
                     }
-                    catch (Exception e) {
-                        throw new Exception("Failed to update item");
+                    else{
+                        throw new EntityNotFoundException("you are not the owner of Restaurant");
                     }
+
                 }
                 else{
                     throw new EntityNotFoundException("Category with id " + cat_id + " not belong to Restaurant");
@@ -107,18 +130,28 @@ public class MenuItemServiceImpl implements MenuItemService {
 
     @Override
     public void deleteItem(Long rest_id,Long cat_id,Long menu_id,Long id) throws Exception {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // Get the username of the current user
+        String username = authentication.getName();
         Optional<ItemEntity> yourEntityOptional = menuItemRepository.findById(menu_id);
         if (yourEntityOptional.isPresent()) {
             ItemEntity yourEntity = yourEntityOptional.get();
             if(yourEntity.getMenu().getId() == menu_id){
                 if(yourEntity.getMenu().getCategory().getId() == cat_id){
                     if(yourEntity.getMenu().getCategory().getRestaurant().getId() == rest_id){
-                        try{
-                            menuItemRepository.deleteById(id);
+                        if(Objects.equals(yourEntity.getMenu().getCategory().getRestaurant().getOwner().getUsername(), username)){
+                            try{
+                                menuItemRepository.deleteById(id);
+                            }
+                            catch (Exception e){
+                                throw new Exception(e.getMessage());
+                            }
                         }
-                        catch (Exception e){
-                            throw new Exception(e.getMessage());
+                        else{
+                            throw new EntityNotFoundException("you are not the owner of Restaurant");
                         }
+
 
                     }
                     else {

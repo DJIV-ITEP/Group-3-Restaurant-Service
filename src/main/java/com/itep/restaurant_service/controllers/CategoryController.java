@@ -46,9 +46,9 @@ public class CategoryController {
     }
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @PutMapping("/restaurants/{rest_id}/category/update/{id}")
-    public ResponseEntity<Object> updateCategory(@PathVariable Long id, @RequestBody CategoryEntity updatedCategory) {
+    public ResponseEntity<Object> updateCategory(@PathVariable Long rest_id,@PathVariable Long id, @RequestBody CategoryEntity updatedCategory) {
         try {
-            CategoryResource updatedResource = categoryService.updateCategory(id, updatedCategory);
+            CategoryResource updatedResource = categoryService.updateCategory(rest_id, id, updatedCategory);
             return ResponseEntity.ok(Map.of(
                     "message", "Category updated successfully",
                     "status", 200,
@@ -63,9 +63,9 @@ public class CategoryController {
 
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @DeleteMapping("/restaurants/{rest_id}/category/delete/{id}")
-    public ResponseEntity<Object> deleteCategory(@PathVariable Long id) {
+    public ResponseEntity<Object> deleteCategory(@PathVariable Long rest_id,@PathVariable Long id) {
         try {
-            categoryService.deleteCategory(id);
+            categoryService.deleteCategory(rest_id,id);
             return ResponseEntity.ok(Map.of(
                     "message", "Category deleted successfully",
                     "status", 200
