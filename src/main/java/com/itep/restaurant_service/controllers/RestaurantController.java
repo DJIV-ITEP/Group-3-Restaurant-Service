@@ -1,5 +1,10 @@
 package com.itep.restaurant_service.controllers;
 
+import com.itep.restaurant_service.controllers.restaurant_utils.list_restaurants.ListRestaurantsHandler;
+import com.itep.restaurant_service.controllers.restaurant_utils.list_restaurants.impls.ListRestaurantsWithOnlyCuisineParam;
+import com.itep.restaurant_service.controllers.restaurant_utils.list_restaurants.impls.ListRestaurantsWithOnlyFoodParam;
+import com.itep.restaurant_service.controllers.restaurant_utils.list_restaurants.impls.ListRestaurantsWithTwoParams;
+import com.itep.restaurant_service.controllers.restaurant_utils.list_restaurants.impls.ListRestaurantsWithoutParams;
 import com.itep.restaurant_service.models.RestaurantResource;
 import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
 import com.itep.restaurant_service.services.impl.RestaurantServiceImpl;
@@ -23,25 +28,8 @@ public class RestaurantController {
 
     @GetMapping("/restaurants")
     public ResponseEntity<Object> getRestaurants(@RequestParam(value = "food", required = false) String food, @RequestParam(value = "cuisine", required = false) String cuisine){
-        if ((food == null || food.isEmpty())
-                && (cuisine == null || cuisine.isEmpty())){
-            return new ResponseEntity<>(
-                    restaurantService.getAvailableRestaurants()
-                    , HttpStatus.OK);
-        } else if (food != null && !food.isEmpty()
-                && cuisine != null && !cuisine.isEmpty()) {
-            return new ResponseEntity<>(
-                    restaurantService.getAvailableFilteredRestaurantsByFoodAndCuisine(food, cuisine)
-                    , HttpStatus.OK);
-        } else if (food != null && !food.isEmpty()) {
-            return new ResponseEntity<>(
-                    restaurantService.getAvailableFilteredRestaurantsByFood(food)
-                    , HttpStatus.OK);
-        }else {
-            return new ResponseEntity<>(
-                    restaurantService.getAvailableFilteredRestaurantsByCuisine(cuisine)
-                    , HttpStatus.OK);
-        }
+        ListRestaurantsHandler handlerChain = new ListRestaurantsWithoutParams(new ListRestaurantsWithTwoParams(new ListRestaurantsWithOnlyFoodParam(new ListRestaurantsWithOnlyCuisineParam(null))));
+        return handlerChain.handleRequest(food,cuisine, restaurantService);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
