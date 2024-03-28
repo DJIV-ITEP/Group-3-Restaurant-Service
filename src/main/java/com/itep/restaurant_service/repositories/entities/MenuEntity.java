@@ -15,7 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "menus")
+@Table(name = "menus",uniqueConstraints={@UniqueConstraint(columnNames = {"name", "category_id"})})
 public class MenuEntity {
     @Id
     @GeneratedValue

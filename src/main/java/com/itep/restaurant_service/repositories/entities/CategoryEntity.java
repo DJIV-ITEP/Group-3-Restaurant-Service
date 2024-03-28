@@ -13,7 +13,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "categories")
+@Table(name = "categories", uniqueConstraints={@UniqueConstraint(columnNames = {"name", "restaurant_id"})})
 public class CategoryEntity {
     @Id
     @GeneratedValue
