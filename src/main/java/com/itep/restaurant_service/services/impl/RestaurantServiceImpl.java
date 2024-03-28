@@ -62,7 +62,7 @@ public class RestaurantServiceImpl implements RestaurantService {
             else if (e.getMessage().contains("not-null property references a null")) {
                 throw new Exception("You must provide all the restaurant fields");
             }
-            throw new Exception("unknown error");
+            throw new Exception(e.getMessage());
         }
 
     }
