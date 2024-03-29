@@ -6,7 +6,7 @@ import com.itep.restaurant_service.repositories.entities.MenuEntity;
 import java.util.List;
 
 public interface MenuService {
-    List<MenuResource> getMenues(Long cat_id);
+    List<MenuResource> getMenues(Long rest_id,Long cat_id) throws Exception;
 
     MenuResource createMenu(Long rest_id,Long cat_id, MenuEntity body) throws Exception;
 
