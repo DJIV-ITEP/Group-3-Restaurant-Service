@@ -34,9 +34,10 @@ public class MenuControllerTest {
     public void testGetMenus() throws Exception{
         List<MenuResource> menus = new ArrayList<>();
         RestaurantEntity res = new RestaurantEntity();
-        CategoryEntity cat = new CategoryEntity(1L,"cat1",res);
+        CategoryEntity cat = new CategoryEntity(1L,"cat1",res,null);
         menus.add(new MenuResource(1L, "Menu 1",cat.getId()));
         menus.add(new MenuResource(2L, "Menu 2",cat.getId()));
+
 
         Mockito.when(menuService.getMenues(1L,1L)).thenReturn(menus);
 
@@ -49,10 +50,11 @@ public class MenuControllerTest {
 
     @Test
     public void testCreateMenu() throws Exception {
-        MenuEntity newMenu = new MenuEntity("New Menu");
+        MenuEntity newMenu = new MenuEntity(1L,"New Menu", null, null);
         RestaurantEntity res = new RestaurantEntity();
-        CategoryEntity cat = new CategoryEntity(1L,"cat1",res);
+        CategoryEntity cat = new CategoryEntity(1L,"cat1",res,null);
         MenuResource newMenuResource = new MenuResource(1L, "New Menu",cat.getId());
+
 
         Mockito.when(menuService.createMenu(1L,1L,Mockito.any(MenuEntity.class))).thenReturn(newMenuResource);
 
@@ -67,10 +69,11 @@ public class MenuControllerTest {
         long id = 1L;
         long rest_id = 1L;
         long cat_id = 1L;
-        MenuEntity updatedMenu = new MenuEntity("Updated Menu");
+        MenuEntity updatedMenu = new MenuEntity(1L,"Updated Menu", null, null);
         RestaurantEntity res = new RestaurantEntity();
-        CategoryEntity cat = new CategoryEntity(1L,"cat1",res);
+        CategoryEntity cat = new CategoryEntity(1L,"cat1",res,null);
         MenuResource updatedMenuResource = new MenuResource(id, "Updated Menu",cat.getId());
+
 
         Mockito.when(menuService.updateMenu(Mockito.eq(rest_id),Mockito.eq(cat_id),Mockito.eq(id), Mockito.any(MenuEntity.class))).thenReturn(updatedMenuResource);
 

@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,7 +18,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @Table(name = "restaurants")
 public class RestaurantEntity {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @Column(name = "name", nullable = false)
     private String name;
@@ -31,11 +33,12 @@ public class RestaurantEntity {
     @Column(name = "cuisine", nullable = false)
     private String cuisine;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "owner", nullable = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
     private UserEntity owner;
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "restaurant", cascade = CascadeType.ALL)
+    private List<CategoryEntity> categories;
 
     public RestaurantResource toRestaurantResource() {
         return RestaurantResource

@@ -15,7 +15,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @Table(name = "items",uniqueConstraints={@UniqueConstraint(columnNames = {"name", "menu_id"})})
 public class ItemEntity {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @Column(name = "name")
     private String name;
@@ -23,8 +23,9 @@ public class ItemEntity {
     private String description;
     @Column(name = "price")
     private double price;
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "menu_id")
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "menu_id", nullable = false)
     private MenuEntity menu;
 
 

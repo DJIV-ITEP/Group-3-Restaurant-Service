@@ -19,13 +19,13 @@ import java.util.stream.Collectors;
 @Table(name = "menus",uniqueConstraints={@UniqueConstraint(columnNames = {"name", "category_id"})})
 public class MenuEntity {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @Column(name = "name")
     private String name;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
-    @OnDelete(action = OnDeleteAction.CASCADE)
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "category_id", nullable = false)
     private CategoryEntity category;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "menu", cascade = CascadeType.ALL)
@@ -33,6 +33,7 @@ public class MenuEntity {
 
     public MenuEntity(String newMenu) {
     }
+
 
 
     public MenuResource toMenuResource() {

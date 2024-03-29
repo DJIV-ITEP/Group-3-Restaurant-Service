@@ -64,7 +64,7 @@ public class RestaurantControllerTest {
     @Test
     @WithMockUser()
     void testGetAvailableRestaurants_NotEmpty() throws Exception {
-        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("owner", "owner"));
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("owner", "owner"), null);
         List<RestaurantResource> result = new ArrayList<>();
         result.add(restaurant.toRestaurantResource());
         when(restaurantService.getAvailableRestaurants())
@@ -87,10 +87,10 @@ public class RestaurantControllerTest {
     @Test
     @WithMockUser()
     void testGetAvailableFilteredRestaurants_ByFoodAndCuisine() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"));
-        RestaurantEntity restaurant2 = new RestaurantEntity(2, "name", "address", "location", "status", "Vegan", "Yemeni",new UserEntity("owner", "owner"));
-        RestaurantEntity restaurant3 = new RestaurantEntity(3, "name", "address", "location", "status", "Seafood", "Egyptian",new UserEntity("owner", "owner"));
-        RestaurantEntity restaurant4 = new RestaurantEntity(4, "name", "address", "location", "status", "Vegan", "Egyptian",new UserEntity("owner", "owner"));
+        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
+        RestaurantEntity restaurant2 = new RestaurantEntity(2, "name", "address", "location", "status", "Vegan", "Yemeni",new UserEntity("owner", "owner"), null);
+        RestaurantEntity restaurant3 = new RestaurantEntity(3, "name", "address", "location", "status", "Seafood", "Egyptian",new UserEntity("owner", "owner"), null);
+        RestaurantEntity restaurant4 = new RestaurantEntity(4, "name", "address", "location", "status", "Vegan", "Egyptian",new UserEntity("owner", "owner"), null);
         List<RestaurantResource> result = new ArrayList<>();
         result.add(restaurant1.toRestaurantResource());
         when(restaurantService.getAvailableFilteredRestaurantsByFoodAndCuisine("Seafood", "Yemeni"))
@@ -116,10 +116,10 @@ public class RestaurantControllerTest {
     @Test
     @WithMockUser()
     void testGetAvailableFilteredRestaurants_ByFood() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"));
-        RestaurantEntity restaurant2 = new RestaurantEntity(2, "name", "address", "location", "status", "Vegan", "Yemeni",new UserEntity("owner", "owner"));
-        RestaurantEntity restaurant3 = new RestaurantEntity(3, "name", "address", "location", "status", "Seafood", "Egyptian",new UserEntity("owner", "owner"));
-        RestaurantEntity restaurant4 = new RestaurantEntity(4, "name", "address", "location", "status", "Vegan", "Egyptian",new UserEntity("owner", "owner"));
+        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
+        RestaurantEntity restaurant2 = new RestaurantEntity(2, "name", "address", "location", "status", "Vegan", "Yemeni",new UserEntity("owner", "owner"), null);
+        RestaurantEntity restaurant3 = new RestaurantEntity(3, "name", "address", "location", "status", "Seafood", "Egyptian",new UserEntity("owner", "owner"), null);
+        RestaurantEntity restaurant4 = new RestaurantEntity(4, "name", "address", "location", "status", "Vegan", "Egyptian",new UserEntity("owner", "owner"), null);
         List<RestaurantResource> result = new ArrayList<>();
         result.add(restaurant1.toRestaurantResource());
         result.add(restaurant3.toRestaurantResource());
@@ -145,10 +145,10 @@ public class RestaurantControllerTest {
     @Test
     @WithMockUser()
     void testGetAvailableFilteredRestaurants_ByCuisine() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"));
-        RestaurantEntity restaurant2 = new RestaurantEntity(2, "name", "address", "location", "status", "Vegan", "Yemeni",new UserEntity("owner", "owner"));
-        RestaurantEntity restaurant3 = new RestaurantEntity(3, "name", "address", "location", "status", "Seafood", "Egyptian",new UserEntity("owner", "owner"));
-        RestaurantEntity restaurant4 = new RestaurantEntity(4, "name", "address", "location", "status", "Vegan", "Egyptian",new UserEntity("owner", "owner"));
+        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
+        RestaurantEntity restaurant2 = new RestaurantEntity(2, "name", "address", "location", "status", "Vegan", "Yemeni",new UserEntity("owner", "owner"), null);
+        RestaurantEntity restaurant3 = new RestaurantEntity(3, "name", "address", "location", "status", "Seafood", "Egyptian",new UserEntity("owner", "owner"), null);
+        RestaurantEntity restaurant4 = new RestaurantEntity(4, "name", "address", "location", "status", "Vegan", "Egyptian",new UserEntity("owner", "owner"), null);
         List<RestaurantResource> result = new ArrayList<>();
         result.add(restaurant1.toRestaurantResource());
         result.add(restaurant2.toRestaurantResource());
@@ -173,7 +173,7 @@ public class RestaurantControllerTest {
     @Test
     @WithMockUser()
     void testCreateRestaurant_NotSystemAdmin() throws Exception {
-        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("owner", "owner"));
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("owner", "owner"), null);
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
         ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
@@ -186,7 +186,7 @@ public class RestaurantControllerTest {
     @Test
     @WithMockUser(roles= "ADMIN")
     void testCreateRestaurant_SystemAdmin() throws Exception {
-        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("owner", "owner"));
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("owner", "owner"), null);
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
         ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
@@ -238,7 +238,7 @@ public class RestaurantControllerTest {
         Map<String, Object> statusMap = Map.of("status", "online");
         String statusJson=ow.writeValueAsString(statusMap);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/restaurants/1/status").contentType(APPLICATION_JSON)
+        mockMvc.perform(MockMvcRequestBuilders.put("/restaurants/1/status").contentType(APPLICATION_JSON)
                         .content(statusJson).with(csrf()))
                 .andExpect(status().isForbidden());
     }
@@ -253,14 +253,14 @@ public class RestaurantControllerTest {
         Map<String, Object> statusMap = Map.of("status", "online");
         String statusJson=ow.writeValueAsString(statusMap);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/restaurants/1/status").contentType(APPLICATION_JSON)
+        mockMvc.perform(MockMvcRequestBuilders.put("/restaurants/1/status").contentType(APPLICATION_JSON)
                         .content(statusJson).with(csrf()))
                 .andExpect(status().isNotFound());
     }
     @Test
     @WithMockUser(username = "username", password = "password",roles= "RESTAURANT")
     void testSetRestaurantStatus_HasRestaurantRoleAndNotOwnIt() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", null);
+        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", null, null);
         when(restaurantService.getRestaurantDetails(1))
                 .thenReturn(Optional.of(restaurant1.toRestaurantResource()));
         when(restaurantService.getRestaurantOwner(1))
@@ -272,15 +272,15 @@ public class RestaurantControllerTest {
         Map<String, Object> statusMap = Map.of("status", "online");
         String statusJson=ow.writeValueAsString(statusMap);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/restaurants/1/status").contentType(APPLICATION_JSON)
+        mockMvc.perform(MockMvcRequestBuilders.put("/restaurants/1/status").contentType(APPLICATION_JSON)
                         .content(statusJson).with(csrf()))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(username = "username", password = "password",roles= "RESTAURANT")
     void testSetRestaurantStatus_HasRestaurantRoleAndOwnIt() throws Exception {
-        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", null);
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", null, null);
         when(restaurantService.getRestaurantDetails(1))
                 .thenReturn(Optional.of(restaurant.toRestaurantResource()));
         when(restaurantService.getRestaurantOwner(1))
@@ -292,7 +292,7 @@ public class RestaurantControllerTest {
         Map<String, Object> statusMap = Map.of("status", "online");
         String statusJson=ow.writeValueAsString(statusMap);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/restaurants/1/status").contentType(APPLICATION_JSON)
+        mockMvc.perform(MockMvcRequestBuilders.put("/restaurants/1/status").contentType(APPLICATION_JSON)
                         .content(statusJson).with(csrf()))
                 .andExpect(status().isOk());
     }

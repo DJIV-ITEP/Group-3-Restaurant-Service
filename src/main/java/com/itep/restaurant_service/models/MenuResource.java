@@ -17,7 +17,6 @@ public class MenuResource {
     private long id;
     private String name;
     private long category;
-    private List<ItemEntity> items;
     public MenuResource(Long id, String name){}
     public MenuResource(Long id, String name, long category){}
 

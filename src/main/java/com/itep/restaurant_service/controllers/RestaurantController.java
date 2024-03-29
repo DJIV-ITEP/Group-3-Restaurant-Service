@@ -1,5 +1,10 @@
 package com.itep.restaurant_service.controllers;
 
+import com.itep.restaurant_service.controllers.restaurant_utils.list_restaurants.ListRestaurantsHandler;
+import com.itep.restaurant_service.controllers.restaurant_utils.list_restaurants.impls.ListRestaurantsWithOnlyCuisineParam;
+import com.itep.restaurant_service.controllers.restaurant_utils.list_restaurants.impls.ListRestaurantsWithOnlyFoodParam;
+import com.itep.restaurant_service.controllers.restaurant_utils.list_restaurants.impls.ListRestaurantsWithTwoParams;
+import com.itep.restaurant_service.controllers.restaurant_utils.list_restaurants.impls.ListRestaurantsWithoutParams;
 import com.itep.restaurant_service.models.RestaurantResource;
 import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
 import com.itep.restaurant_service.services.impl.RestaurantServiceImpl;
@@ -10,8 +15,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 public class RestaurantController {
@@ -23,25 +30,11 @@ public class RestaurantController {
 
     @GetMapping("/restaurants")
     public ResponseEntity<Object> getRestaurants(@RequestParam(value = "food", required = false) String food, @RequestParam(value = "cuisine", required = false) String cuisine){
-        if ((food == null || food.isEmpty())
-                && (cuisine == null || cuisine.isEmpty())){
-            return new ResponseEntity<>(
-                    restaurantService.getAvailableRestaurants()
-                    , HttpStatus.OK);
-        } else if (food != null && !food.isEmpty()
-                && cuisine != null && !cuisine.isEmpty()) {
-            return new ResponseEntity<>(
-                    restaurantService.getAvailableFilteredRestaurantsByFoodAndCuisine(food, cuisine)
-                    , HttpStatus.OK);
-        } else if (food != null && !food.isEmpty()) {
-            return new ResponseEntity<>(
-                    restaurantService.getAvailableFilteredRestaurantsByFood(food)
-                    , HttpStatus.OK);
-        }else {
-            return new ResponseEntity<>(
-                    restaurantService.getAvailableFilteredRestaurantsByCuisine(cuisine)
-                    , HttpStatus.OK);
-        }
+        ListRestaurantsHandler handlerChain = new ListRestaurantsWithoutParams(new ListRestaurantsWithTwoParams(new ListRestaurantsWithOnlyFoodParam(new ListRestaurantsWithOnlyCuisineParam(null))));
+        Map<String, Object> filtersMap = new HashMap<>();
+        Optional.ofNullable(food).ifPresent(v -> filtersMap.put("food", v));
+        Optional.ofNullable(cuisine).ifPresent(v -> filtersMap.put("cuisine", v));
+        return handlerChain.handleRequest(filtersMap, restaurantService);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -78,7 +71,7 @@ public class RestaurantController {
 
 
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
-    @PostMapping("/restaurants/{restaurantId}/status")
+    @PutMapping("/restaurants/{restaurantId}/status")
     public ResponseEntity<Object> setRestaurantStatus(@PathVariable("restaurantId") long restaurantId, @RequestBody Map<String, Object> body){
         var restaurantResource = restaurantService.getRestaurantDetails(restaurantId);
         if(restaurantResource.isEmpty()){
@@ -93,14 +86,13 @@ public class RestaurantController {
         if (!auth.getName().equals(owner.get().getUsername())){
             return new ResponseEntity<>(
                     Map.of("message", "You don't have the permission to update this restaurant",
-                            "status", 400),
-                    HttpStatus.BAD_REQUEST);
+                            "status", 403),
+                    HttpStatus.FORBIDDEN);
 
         }
 
-        String status = body.get("status").toString();
-        if("offline".equals(status)||"online".equals(status)) {
-            restaurantService.setRestaurantStatus(restaurantId, status);
+        if("offline".equals(body.get("status"))||"online".equals(body.get("status"))) {
+            restaurantService.setRestaurantStatus(restaurantId, body.get("status").toString());
             return new ResponseEntity<>(
                     Map.of("message", "Restaurant status updated successfully",
                             "status", 200)

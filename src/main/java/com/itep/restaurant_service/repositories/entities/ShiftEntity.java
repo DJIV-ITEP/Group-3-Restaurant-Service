@@ -8,21 +8,28 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "shifts")
+@Table(name = "shifts",uniqueConstraints={
+        @UniqueConstraint(columnNames = {"restaurant_id", "name"})
+})
 public class ShiftEntity {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @Column(name = "name")
     private String name;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "restaurant_id")
-    @OnDelete(action = OnDeleteAction.CASCADE)
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "restaurant_id", nullable = false)
     private RestaurantEntity restaurant;
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "shift", cascade = CascadeType.ALL)
+    private List<DayEntity> days;
+
     public ShiftResource toShiftResource() {
         return ShiftResource
                 .builder()

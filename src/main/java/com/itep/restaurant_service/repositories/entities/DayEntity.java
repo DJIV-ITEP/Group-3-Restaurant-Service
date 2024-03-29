@@ -13,16 +13,17 @@ import org.hibernate.annotations.OnDeleteAction;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "days")
+@Table(name = "days",uniqueConstraints={
+        @UniqueConstraint(columnNames = {"shift_id", "name"})
+})
 public class DayEntity {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @Column(name = "name")
     private String name;
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "shift_id")
-    @OnDelete(action = OnDeleteAction.CASCADE)
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "shift_id", nullable = false)
     private ShiftEntity shift;
     public DayResource toDayResource() {
         return DayResource
