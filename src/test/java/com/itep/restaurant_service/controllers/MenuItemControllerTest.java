@@ -33,7 +33,7 @@ public class MenuItemControllerTest {
     public void testGetItems() {
         List<ItemResource> items = new ArrayList<>();
         RestaurantEntity res = new RestaurantEntity();
-        CategoryEntity cat = new CategoryEntity(1L,"cat1",res);
+        CategoryEntity cat = new CategoryEntity(1L,"cat1",res, null);
         MenuEntity men = new MenuEntity(1L,"menu 1", cat,null);
         items.add(new ItemResource(1L , "item 1",1200,"the descrip of item", 1L));
 
@@ -53,7 +53,7 @@ public class MenuItemControllerTest {
     public void testCreateItem() throws Exception{
         // Mock data
         RestaurantEntity res = new RestaurantEntity();
-        CategoryEntity cat = new CategoryEntity(1L,"cat1",res);
+        CategoryEntity cat = new CategoryEntity(1L,"cat1",res, null);
         MenuEntity men = new MenuEntity(1L,"menu 1", cat,null);
         ItemEntity addItem = new ItemEntity(1L, "item 1", "description",1200, men);
         ItemResource addResource = new ItemResource(1L, "item 2",1200,"descript",1L );
