@@ -10,6 +10,13 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
+      - name: Connect to PostgreSQL
+        uses: harmon758/postgresql-action@v1
+        with:
+          postgresql version: '11'
+          postgresql db: 'restaurant'
+          postgresql user: 'postgres'
+          postgresql password: 'postgres'
       - uses: actions/setup-java@v3
         with:
           java-version: '17'
