@@ -30,7 +30,7 @@ public class MenuItemControllerTest {
     private MenuItemController menuItemController;
 
     @Test
-    public void testGetItems() {
+    public void testGetItems() throws Exception {
         List<ItemResource> items = new ArrayList<>();
         RestaurantEntity res = new RestaurantEntity();
         CategoryEntity cat = new CategoryEntity(1L,"cat1",res, null);
@@ -38,10 +38,10 @@ public class MenuItemControllerTest {
         items.add(new ItemResource(1L , "item 1",1200,"the descrip of item", 1L));
 
         // Mock service method
-        Mockito.when(menuItemService.getAllItems(1L)).thenReturn(items);
+        Mockito.when(menuItemService.getItems(1L,1L,1L)).thenReturn(items);
 
         // Call controller method
-        List<ItemResource> result = menuItemController.getItems(1L);
+        List<ItemResource> result = menuItemController.getItems(1L,1L,1L);
 
         // Assert
         Assert.assertEquals(items, result);

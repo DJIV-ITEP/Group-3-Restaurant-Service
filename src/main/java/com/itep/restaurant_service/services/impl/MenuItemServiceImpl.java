@@ -29,10 +29,34 @@ public class MenuItemServiceImpl implements MenuItemService {
     @Autowired
     private CategoryRepository categoryRepository;
     @Override
-    public List<ItemResource> getAllItems(Long menu_id) {
-        return menuItemRepository.findByMenuId(menu_id).stream()
-                .map(ItemEntity::toItemResource)
-                .collect(Collectors.toList());
+    public List<ItemResource> getItems(Long rest_id, Long cat_id,Long menu_id) throws Exception {
+        Optional<MenuEntity> yourEntityOptional = menuRepository.findById(menu_id);
+        if (yourEntityOptional.isPresent()) {
+            MenuEntity yourEntity = yourEntityOptional.get();
+            if(yourEntity.getCategory().getId() == cat_id){
+                if(yourEntity.getCategory().getRestaurant().getId() == rest_id){
+                    try{
+                        return menuItemRepository.findByMenuId(menu_id).stream()
+                                .map(ItemEntity::toItemResource)
+                                .collect(Collectors.toList());
+                    }
+                    catch (Exception e){
+                        throw new Exception(e.getMessage());
+                    }
+
+                }
+                else{
+                    throw new EntityNotFoundException("Category with id " + cat_id + " not belong to Restaurant");
+                }
+            }
+            else{
+                throw new EntityNotFoundException("Menu with id " + menu_id + " not belong to Category");
+            }
+        }
+        else{
+            throw new EntityNotFoundException("Menu with id " + menu_id + " not found");
+        }
+
     }
 
     @Override

@@ -17,6 +17,6 @@ public class ItemResource {
     private long menu;
     public ItemResource(){}
     public ItemResource(long id, String name, String description){}
-    public ItemResource(long id, String name, String description, MenuEntity menu){}
+    public ItemResource(long id, String name, String description, long menu){}
 
 }

@@ -4,7 +4,9 @@ import com.itep.restaurant_service.repositories.entities.CategoryEntity;
 import com.itep.restaurant_service.repositories.entities.ItemEntity;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,7 +18,14 @@ public class MenuResource {
     private String name;
     private long category;
     public MenuResource(Long id, String name){}
-    public MenuResource(Long id, String name, CategoryEntity category){}
+    public MenuResource(Long id, String name, long category){}
+
+    public MenuResource(Long id, String name, long category, List<ItemEntity> items){
+        id = id;
+        name = name;
+        category = category;
+        items = items;
+    }
 
 
 }

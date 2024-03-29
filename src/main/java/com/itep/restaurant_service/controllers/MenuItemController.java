@@ -25,8 +25,9 @@ public class MenuItemController {
     }
 
     @GetMapping("/restaurants/{rest_id}/category/{cat_id}/menus/{menu_id}/item")
-    public List<ItemResource> getItems(@PathVariable Long menu_id){
-        return menuItemService.getAllItems(menu_id);
+    public List<ItemResource> getItems(@PathVariable Long rest_id,@PathVariable Long cat_id,@PathVariable Long menu_id) throws Exception {
+        return menuItemService.getItems(rest_id,cat_id,menu_id);
+
     }
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @PostMapping("/restaurants/{rest_id}/category/{cat_id}/menus/{menu_id}/item")

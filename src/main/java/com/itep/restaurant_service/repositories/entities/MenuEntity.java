@@ -3,21 +3,20 @@ package com.itep.restaurant_service.repositories.entities;
 
 import com.itep.restaurant_service.models.MenuResource;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "menus",uniqueConstraints={
-        @UniqueConstraint(columnNames = {"category_id", "name"})
-})
+@Table(name = "menus",uniqueConstraints={@UniqueConstraint(columnNames = {"name", "category_id"})})
 public class MenuEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,6 +30,11 @@ public class MenuEntity {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "menu", cascade = CascadeType.ALL)
     private List<ItemEntity> items;
+
+    public MenuEntity(String newMenu) {
+    }
+
+
 
     public MenuResource toMenuResource() {
         return MenuResource

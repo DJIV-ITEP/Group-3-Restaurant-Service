@@ -35,10 +35,29 @@ public class MenuServiceImpl implements MenuService {
 
 
     @Override
-    public List<MenuResource> getMenues(Long cat_id) {
-        return menuRepository.findByCategoryId(cat_id).stream()
-                .map(MenuEntity::toMenuResource)
-                .collect(Collectors.toList());
+    public List<MenuResource> getMenues(Long rest_id, Long cat_id) throws Exception{
+        Optional<CategoryEntity> yourEntityOptional = categoryRepository.findById(cat_id);
+        if (yourEntityOptional .isPresent()) {
+            CategoryEntity yourEntity = yourEntityOptional.get();
+            if(yourEntity.getRestaurant().getId() == rest_id){
+                try{
+                    return menuRepository.findByCategoryId(cat_id).stream()
+                            .map(MenuEntity::toMenuResource)
+                            .collect(Collectors.toList());
+                }
+                catch (Exception e){
+                    throw new Exception(e.getMessage());
+                }
+            }
+            else{
+                throw new EntityNotFoundException("Category with id " + cat_id + " not belong to Restaurant");
+            }
+        }
+        else{
+            throw new EntityNotFoundException("Category with id " + cat_id + " not found");
+        }
+
+
     }
 
     @Override
@@ -64,7 +83,7 @@ public class MenuServiceImpl implements MenuService {
                             throw new Exception("You must provide all the category fields");
                         }
                         System.out.println(e.getMessage());
-                        throw new Exception("unknown error");
+                        throw new Exception(e.getMessage());
                     }
                 }
                 else {

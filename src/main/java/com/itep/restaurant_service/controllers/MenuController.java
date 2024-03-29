@@ -20,8 +20,24 @@ public class MenuController {
     }
 
     @GetMapping("/restaurants/{rest_id}/category/{cat_id}/menus")
-    public List<MenuResource> getMenus(@PathVariable Long cat_id){
-        return menuService.getMenues(cat_id);
+    public List<MenuResource> getMenus(@PathVariable Long rest_id, @PathVariable Long cat_id) throws Exception {
+//        try{
+//            List<MenuResource> getResource = menuService.getMenues(cat_id);
+//            return ResponseEntity.ok(Map.of(
+//                    "message","Menu created successfully",
+//                    "status",200,
+//                    "data",addResource
+//            ));
+//
+//        }
+//        catch (Exception e){
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+//                    Map.of("message",e.getMessage(),
+//                            "status", 400)
+//            );
+//        }
+
+        return menuService.getMenues(rest_id, cat_id);
     }
 
 //    @GetMapping("/menus")

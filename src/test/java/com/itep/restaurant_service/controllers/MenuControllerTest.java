@@ -31,16 +31,17 @@ public class MenuControllerTest {
     private MenuController menuController;
 
     @Test
-    public void testGetMenus() {
+    public void testGetMenus() throws Exception{
         List<MenuResource> menus = new ArrayList<>();
         RestaurantEntity res = new RestaurantEntity();
-        CategoryEntity cat = new CategoryEntity(1L,"cat1",res, null);
-        menus.add(new MenuResource(1L, "Menu 1",cat));
-        menus.add(new MenuResource(2L, "Menu 2",cat));
+        CategoryEntity cat = new CategoryEntity(1L,"cat1",res,null);
+        menus.add(new MenuResource(1L, "Menu 1",cat.getId()));
+        menus.add(new MenuResource(2L, "Menu 2",cat.getId()));
 
-        Mockito.when(menuService.getMenues(1L)).thenReturn(menus);
 
-        List<MenuResource> result = menuController.getMenus(1L);
+        Mockito.when(menuService.getMenues(1L,1L)).thenReturn(menus);
+
+        List<MenuResource> result = menuController.getMenus(1L,1L);
 
         assertEquals(2, result.size());
         assertEquals("Menu 1", result.get(0).getName());
@@ -51,8 +52,9 @@ public class MenuControllerTest {
     public void testCreateMenu() throws Exception {
         MenuEntity newMenu = new MenuEntity(1L,"New Menu", null, null);
         RestaurantEntity res = new RestaurantEntity();
-        CategoryEntity cat = new CategoryEntity(1L,"cat1",res, null);
-        MenuResource newMenuResource = new MenuResource(1L, "New Menu",cat);
+        CategoryEntity cat = new CategoryEntity(1L,"cat1",res,null);
+        MenuResource newMenuResource = new MenuResource(1L, "New Menu",cat.getId());
+
 
         Mockito.when(menuService.createMenu(1L,1L,Mockito.any(MenuEntity.class))).thenReturn(newMenuResource);
 
@@ -69,8 +71,9 @@ public class MenuControllerTest {
         long cat_id = 1L;
         MenuEntity updatedMenu = new MenuEntity(1L,"Updated Menu", null, null);
         RestaurantEntity res = new RestaurantEntity();
-        CategoryEntity cat = new CategoryEntity(1L,"cat1",res, null);
-        MenuResource updatedMenuResource = new MenuResource(id, "Updated Menu",cat);
+        CategoryEntity cat = new CategoryEntity(1L,"cat1",res,null);
+        MenuResource updatedMenuResource = new MenuResource(id, "Updated Menu",cat.getId());
+
 
         Mockito.when(menuService.updateMenu(Mockito.eq(rest_id),Mockito.eq(cat_id),Mockito.eq(id), Mockito.any(MenuEntity.class))).thenReturn(updatedMenuResource);
 
