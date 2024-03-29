@@ -1,0 +1,12 @@
+## Release 1.0.0
+### Features:
+- authentication for admin
+- authenticated admin can add restaurant
+- authentication for restaurants
+- authenticated restaurants can set themselves to online or offline
+- authenticated restaurants can add, update, and delete its categories
+- authenticated restaurants can add, update, and delete its menus
+- authenticated restaurants can add, update, and delete its items
+- get available restaurants
+- can filter get restaurants based on food and cuisine
+- get restaurant detail based on its ID
