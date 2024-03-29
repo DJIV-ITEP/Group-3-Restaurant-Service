@@ -1,15 +1,14 @@
 package com.itep.restaurant_service.services;
 
-import com.itep.restaurant_service.models.RestaurantResource;
-import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-
 import java.util.List;
 import java.util.Optional;
 
+import com.itep.restaurant_service.models.RestaurantResource;
+import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
+
 public interface RestaurantService {
     List<RestaurantResource> getAvailableRestaurants();
+
     RestaurantResource createRestaurant(RestaurantEntity body) throws Exception;
 
     Optional<RestaurantResource> getRestaurantDetails(long restaurantId);
