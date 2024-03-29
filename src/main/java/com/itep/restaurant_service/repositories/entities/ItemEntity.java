@@ -12,10 +12,12 @@ import org.hibernate.annotations.OnDeleteAction;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "items")
+@Table(name = "items",uniqueConstraints={
+        @UniqueConstraint(columnNames = {"menu_id", "name"})
+})
 public class ItemEntity {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @Column(name = "name")
     private String name;

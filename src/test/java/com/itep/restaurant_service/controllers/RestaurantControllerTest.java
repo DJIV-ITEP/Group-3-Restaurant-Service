@@ -238,7 +238,7 @@ public class RestaurantControllerTest {
         Map<String, Object> statusMap = Map.of("status", "online");
         String statusJson=ow.writeValueAsString(statusMap);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/restaurants/1/status").contentType(APPLICATION_JSON)
+        mockMvc.perform(MockMvcRequestBuilders.put("/restaurants/1/status").contentType(APPLICATION_JSON)
                         .content(statusJson).with(csrf()))
                 .andExpect(status().isForbidden());
     }
@@ -253,7 +253,7 @@ public class RestaurantControllerTest {
         Map<String, Object> statusMap = Map.of("status", "online");
         String statusJson=ow.writeValueAsString(statusMap);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/restaurants/1/status").contentType(APPLICATION_JSON)
+        mockMvc.perform(MockMvcRequestBuilders.put("/restaurants/1/status").contentType(APPLICATION_JSON)
                         .content(statusJson).with(csrf()))
                 .andExpect(status().isNotFound());
     }
@@ -272,9 +272,9 @@ public class RestaurantControllerTest {
         Map<String, Object> statusMap = Map.of("status", "online");
         String statusJson=ow.writeValueAsString(statusMap);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/restaurants/1/status").contentType(APPLICATION_JSON)
+        mockMvc.perform(MockMvcRequestBuilders.put("/restaurants/1/status").contentType(APPLICATION_JSON)
                         .content(statusJson).with(csrf()))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -292,7 +292,7 @@ public class RestaurantControllerTest {
         Map<String, Object> statusMap = Map.of("status", "online");
         String statusJson=ow.writeValueAsString(statusMap);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/restaurants/1/status").contentType(APPLICATION_JSON)
+        mockMvc.perform(MockMvcRequestBuilders.put("/restaurants/1/status").contentType(APPLICATION_JSON)
                         .content(statusJson).with(csrf()))
                 .andExpect(status().isOk());
     }

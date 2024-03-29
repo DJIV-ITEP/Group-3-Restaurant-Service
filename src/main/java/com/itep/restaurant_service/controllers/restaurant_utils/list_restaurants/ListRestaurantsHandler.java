@@ -7,5 +7,5 @@ import java.util.Map;
 
 //Chain of Responsible Design Pattern
 public interface ListRestaurantsHandler {
-    ResponseEntity<Object> handleRequest(String food, String cuisine, RestaurantServiceImpl restaurantService);
+    ResponseEntity<Object> handleRequest(Map<String, Object> filtersMap, RestaurantServiceImpl restaurantService);
 }

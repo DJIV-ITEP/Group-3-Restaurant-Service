@@ -15,8 +15,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 public class RestaurantController {
@@ -29,7 +31,10 @@ public class RestaurantController {
     @GetMapping("/restaurants")
     public ResponseEntity<Object> getRestaurants(@RequestParam(value = "food", required = false) String food, @RequestParam(value = "cuisine", required = false) String cuisine){
         ListRestaurantsHandler handlerChain = new ListRestaurantsWithoutParams(new ListRestaurantsWithTwoParams(new ListRestaurantsWithOnlyFoodParam(new ListRestaurantsWithOnlyCuisineParam(null))));
-        return handlerChain.handleRequest(food,cuisine, restaurantService);
+        Map<String, Object> filtersMap = new HashMap<>();
+        Optional.ofNullable(food).ifPresent(v -> filtersMap.put("food", v));
+        Optional.ofNullable(cuisine).ifPresent(v -> filtersMap.put("cuisine", v));
+        return handlerChain.handleRequest(filtersMap, restaurantService);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -66,7 +71,7 @@ public class RestaurantController {
 
 
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
-    @PostMapping("/restaurants/{restaurantId}/status")
+    @PutMapping("/restaurants/{restaurantId}/status")
     public ResponseEntity<Object> setRestaurantStatus(@PathVariable("restaurantId") long restaurantId, @RequestBody Map<String, Object> body){
         var restaurantResource = restaurantService.getRestaurantDetails(restaurantId);
         if(restaurantResource.isEmpty()){
@@ -81,14 +86,13 @@ public class RestaurantController {
         if (!auth.getName().equals(owner.get().getUsername())){
             return new ResponseEntity<>(
                     Map.of("message", "You don't have the permission to update this restaurant",
-                            "status", 400),
-                    HttpStatus.BAD_REQUEST);
+                            "status", 403),
+                    HttpStatus.FORBIDDEN);
 
         }
 
-        String status = body.get("status").toString();
-        if("offline".equals(status)||"online".equals(status)) {
-            restaurantService.setRestaurantStatus(restaurantId, status);
+        if("offline".equals(body.get("status"))||"online".equals(body.get("status"))) {
+            restaurantService.setRestaurantStatus(restaurantId, body.get("status").toString());
             return new ResponseEntity<>(
                     Map.of("message", "Restaurant status updated successfully",
                             "status", 200)

@@ -6,8 +6,13 @@ import com.itep.restaurant_service.repositories.UserRepository;
 import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
 import com.itep.restaurant_service.repositories.entities.UserEntity;
 import com.itep.restaurant_service.services.RestaurantService;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -76,7 +81,31 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     @Override
     public Optional<UserEntity> getRestaurantOwner(long restaurantId) {
-        return restaurantRepository.findOwnerById(restaurantId);
+        var restaurant = restaurantRepository.findOwnerById(restaurantId);
+        return Optional.of(restaurant.get().getOwner());
+    }
+
+    @Override
+    public UserDetails getRestaurantUserByUsername(String username) {
+        if("admin".equals(username)){
+            return User.withUsername("admin")
+                    .password((new BCryptPasswordEncoder()).encode("admin"))
+                    .roles("ADMIN")
+                    .build();
+        }else{
+            try {
+                UserEntity user = userRepository.findById(username).orElseThrow(() -> new Exception("User Not Found"));
+                return User.withUsername(user.getUsername())
+                        .password((new BCryptPasswordEncoder()).encode(user.getPassword()))
+                        .roles("RESTAURANT")
+                        .build();
+
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+
     }
 
     @Override

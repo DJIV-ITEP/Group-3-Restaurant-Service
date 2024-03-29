@@ -15,14 +15,14 @@ public class ListRestaurantsWithoutParams  implements ListRestaurantsHandler {
     }
 
     @Override
-    public ResponseEntity<Object> handleRequest(String food, String cuisine, RestaurantServiceImpl restaurantService) {
-        if ((food == null || food.isEmpty())
-        &&(cuisine == null || cuisine.isEmpty())) {
+    public ResponseEntity<Object> handleRequest(Map<String, Object> filtersMap, RestaurantServiceImpl restaurantService) {
+        if ((filtersMap.get("food")==null||filtersMap.get("food").toString().isEmpty())
+        &&(filtersMap.get("cuisine") == null||filtersMap.get("cuisine").toString().isEmpty())) {
             return new ResponseEntity<>(
                     restaurantService.getAvailableRestaurants()
                     , HttpStatus.OK);
         } else if (successor != null) {
-            return successor.handleRequest(food, cuisine, restaurantService);
+            return successor.handleRequest(filtersMap, restaurantService);
         }
         return new ResponseEntity<>(
                 Map.of("message","could not list the restaurants", "status",400)

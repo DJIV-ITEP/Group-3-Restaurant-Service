@@ -13,10 +13,12 @@ import org.hibernate.annotations.OnDeleteAction;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "days")
+@Table(name = "days",uniqueConstraints={
+        @UniqueConstraint(columnNames = {"shift_id", "name"})
+})
 public class DayEntity {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @Column(name = "name")
     private String name;

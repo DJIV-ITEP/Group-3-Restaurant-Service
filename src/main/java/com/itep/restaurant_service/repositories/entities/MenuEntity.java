@@ -15,10 +15,12 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "menus")
+@Table(name = "menus",uniqueConstraints={
+        @UniqueConstraint(columnNames = {"category_id", "name"})
+})
 public class MenuEntity {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @Column(name = "name")
     private String name;
