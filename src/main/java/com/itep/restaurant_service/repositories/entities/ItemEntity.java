@@ -25,9 +25,9 @@ public class ItemEntity {
     private String description;
     @Column(name = "price")
     private double price;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "menu_id")
-    @OnDelete(action = OnDeleteAction.CASCADE)
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "menu_id", nullable = false)
     private MenuEntity menu;
 
 

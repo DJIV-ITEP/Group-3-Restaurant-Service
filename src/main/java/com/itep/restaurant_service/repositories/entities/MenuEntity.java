@@ -24,18 +24,13 @@ public class MenuEntity {
     private long id;
     @Column(name = "name")
     private String name;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
-    @OnDelete(action = OnDeleteAction.CASCADE)
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "category_id", nullable = false)
     private CategoryEntity category;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "menu_id", nullable = true)
-    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "menu", cascade = CascadeType.ALL)
     private List<ItemEntity> items;
-
-    public MenuEntity(String newMenu) {
-    }
 
     public MenuResource toMenuResource() {
         return MenuResource
@@ -43,7 +38,6 @@ public class MenuEntity {
                 .id(id)
                 .name(name)
                 .category(category.getId())
-                .items(items.stream().toList())
                 .build();
     }
 

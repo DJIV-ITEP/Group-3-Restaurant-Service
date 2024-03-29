@@ -58,7 +58,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     public RestaurantResource createRestaurant(RestaurantEntity body) throws Exception {
         try{
-            userRepository.save(body.getOwner());
+//            userRepository.save(body.getOwner());
             return restaurantRepository.save(body).toRestaurantResource();
         }catch (Exception e){
             if(e.getMessage().contains("duplicate key value violates unique constraint")){
