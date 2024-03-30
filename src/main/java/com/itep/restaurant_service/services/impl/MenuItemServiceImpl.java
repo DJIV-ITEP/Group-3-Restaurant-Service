@@ -158,7 +158,7 @@ public class MenuItemServiceImpl implements MenuItemService {
 
         // Get the username of the current user
         String username = authentication.getName();
-        Optional<ItemEntity> yourEntityOptional = menuItemRepository.findById(menu_id);
+        Optional<ItemEntity> yourEntityOptional = menuItemRepository.findById(id);
         if (yourEntityOptional.isPresent()) {
             ItemEntity yourEntity = yourEntityOptional.get();
             if(yourEntity.getMenu().getId() == menu_id){

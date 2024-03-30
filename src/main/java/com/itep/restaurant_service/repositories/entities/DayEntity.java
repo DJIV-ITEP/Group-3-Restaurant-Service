@@ -22,7 +22,7 @@ public class DayEntity {
     private long id;
     @Column(name = "name")
     private String name;
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "shift_id", nullable = false)
     private ShiftEntity shift;
     public DayResource toDayResource() {

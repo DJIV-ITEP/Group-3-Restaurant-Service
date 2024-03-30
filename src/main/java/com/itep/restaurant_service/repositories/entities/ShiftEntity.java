@@ -24,10 +24,10 @@ public class ShiftEntity {
     private long id;
     @Column(name = "name")
     private String name;
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "restaurant_id", nullable = false)
     private RestaurantEntity restaurant;
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "shift", cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "shift", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<DayEntity> days;
 
     public ShiftResource toShiftResource() {

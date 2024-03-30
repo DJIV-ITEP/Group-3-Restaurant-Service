@@ -24,7 +24,7 @@ public class ItemEntity {
     @Column(name = "price")
     private double price;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "menu_id", nullable = false)
     private MenuEntity menu;
 

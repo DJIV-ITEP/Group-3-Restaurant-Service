@@ -33,11 +33,11 @@ public class RestaurantEntity {
     @Column(name = "cuisine", nullable = false)
     private String cuisine;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "owner", nullable = false)
     private UserEntity owner;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "restaurant", cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CategoryEntity> categories;
 
     public RestaurantResource toRestaurantResource() {
