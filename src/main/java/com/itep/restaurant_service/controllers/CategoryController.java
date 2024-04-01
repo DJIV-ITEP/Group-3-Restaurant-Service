@@ -45,7 +45,7 @@ public class CategoryController {
         }
     }
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
-    @PutMapping("/restaurants/{rest_id}/category/update/{id}")
+    @PutMapping("/restaurants/{rest_id}/category/{id}")
     public ResponseEntity<Object> updateCategory(@PathVariable Long rest_id,@PathVariable Long id, @RequestBody CategoryEntity updatedCategory) {
         try {
             CategoryResource updatedResource = categoryService.updateCategory(rest_id, id, updatedCategory);
@@ -62,7 +62,7 @@ public class CategoryController {
     }
 
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
-    @DeleteMapping("/restaurants/{rest_id}/category/delete/{id}")
+    @DeleteMapping("/restaurants/{rest_id}/category/{id}")
     public ResponseEntity<Object> deleteCategory(@PathVariable Long rest_id,@PathVariable Long id) {
         try {
             categoryService.deleteCategory(rest_id,id);
