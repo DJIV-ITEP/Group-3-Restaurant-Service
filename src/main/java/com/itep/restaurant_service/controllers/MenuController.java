@@ -80,7 +80,7 @@ public class MenuController {
         }
     }
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
-    @PutMapping("/restaurants/{rest_id}/category/{cat_id}/menus/update/{id}")
+    @PutMapping("/restaurants/{rest_id}/category/{cat_id}/menus/{id}")
     public ResponseEntity<Object> updateMenu(@PathVariable Long rest_id,@PathVariable Long cat_id,@PathVariable Long id, @RequestBody MenuEntity updatedMenu) {
         try {
             MenuResource updatedResource = menuService.updateMenu(rest_id,cat_id,id, updatedMenu);
@@ -96,7 +96,7 @@ public class MenuController {
         }
     }
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
-    @DeleteMapping("/restaurants/{rest_id}/category/{cat_id}/menus/delete/{id}")
+    @DeleteMapping("/restaurants/{rest_id}/category/{cat_id}/menus/{id}")
     public ResponseEntity<Object> deleteMenu(@PathVariable Long rest_id, @PathVariable Long cat_id,@PathVariable Long id) {
         try {
             menuService.deleteMenu(rest_id,cat_id,id);
