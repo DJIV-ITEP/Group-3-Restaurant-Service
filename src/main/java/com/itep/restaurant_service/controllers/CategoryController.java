@@ -31,8 +31,7 @@ public class CategoryController {
             CategoryResource addResource = categoryService.createCategory(rest_id,addCategory);
             return ResponseEntity.ok(Map.of(
                     "message","Category created successfully",
-                    "status",200,
-                    "data",addResource
+                    "status",200
             ));
 
         }
@@ -51,8 +50,7 @@ public class CategoryController {
             CategoryResource updatedResource = categoryService.updateCategory(rest_id, id, updatedCategory);
             return ResponseEntity.ok(Map.of(
                     "message", "Category updated successfully",
-                    "status", 200,
-                    "data", updatedResource
+                    "status", 200
             ));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
@@ -63,7 +61,7 @@ public class CategoryController {
 
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @DeleteMapping("/restaurants/{rest_id}/category/{id}")
-    public ResponseEntity<Object> deleteCategory(@PathVariable Long rest_id,@PathVariable Long id) {
+    public ResponseEntity<Object> deleteCategory(@PathVariable long rest_id,@PathVariable long id) {
         try {
             categoryService.deleteCategory(rest_id,id);
             return ResponseEntity.ok(Map.of(
