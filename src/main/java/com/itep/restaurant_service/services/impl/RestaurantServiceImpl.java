@@ -6,7 +6,11 @@ import com.itep.restaurant_service.repositories.UserRepository;
 import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
 import com.itep.restaurant_service.repositories.entities.UserEntity;
 import com.itep.restaurant_service.services.RestaurantService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -14,13 +18,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class RestaurantServiceImpl implements RestaurantService {
-    private final UserRepository userRepository;
-    private final RestaurantRepository restaurantRepository;
+    public final UserRepository userRepository;
+    public final RestaurantRepository restaurantRepository;
 
     public RestaurantServiceImpl(RestaurantRepository restaurantRepository, UserRepository userRepository) {
         this.restaurantRepository = restaurantRepository;
@@ -71,7 +76,42 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
 
     }
+    @Override
+    public ResponseEntity<Object> setRestaurantStatus(long restaurantId, Map<String, Object> body) {
+        var restaurantEntity = restaurantRepository.findById(restaurantId);
+        if(restaurantEntity.isEmpty()){
+            return new ResponseEntity<>(
+                    Map.of("message", "Restaurant not found",
+                            "status", 404),
+                    HttpStatus.NOT_FOUND);
+        }
+        // check if the updated restaurant belong to the user who wants to update
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        var owner = getRestaurantOwner(restaurantId);
+        if (!auth.getName().equals(owner.get().getUsername())){
+            return new ResponseEntity<>(
+                    Map.of("message", "You don't have the permission to update this restaurant",
+                            "status", 403),
+                    HttpStatus.FORBIDDEN);
 
+        }
+
+        if("offline".equals(body.get("status"))||"online".equals(body.get("status"))) {
+            var restaurant = restaurantEntity.get();
+            restaurant.setStatus(body.get("status").toString());
+            restaurantRepository.save(restaurant);
+            return new ResponseEntity<>(
+                    Map.of("message", "Restaurant status updated successfully",
+                            "status", 200)
+                    , HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(
+                    Map.of("message", "Restaurant status must be either 'offline' or 'online' only",
+                            "status", 400)
+                    , HttpStatus.BAD_REQUEST);
+        }
+
+    }
     @Override
     public Optional<RestaurantResource> getRestaurantDetails(long restaurantId) {
         Optional<RestaurantEntity> restaurantEntity = restaurantRepository.findById(restaurantId);
@@ -108,8 +148,4 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     }
 
-    @Override
-    public void setRestaurantStatus(long id, String status) {
-        restaurantRepository.updateStatus(id, status);
-    }
 }
