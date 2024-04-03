@@ -7,6 +7,7 @@ import com.itep.restaurant_service.models.RestaurantResource;
 import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
 
 public interface RestaurantService {
+
     List<RestaurantResource> getAvailableRestaurants();
 
     List<RestaurantResource> getAllRestaurants();
