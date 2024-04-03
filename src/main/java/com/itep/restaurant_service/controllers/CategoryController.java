@@ -19,12 +19,12 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
     @GetMapping("/restaurants/{rest_id}/category")
-    public List<CategoryResource> getCategory(@PathVariable Long rest_id){
+    public List<CategoryResource> getCategory(@PathVariable long rest_id){
         return categoryService.getCategory(rest_id);
     }
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @PostMapping("/restaurants/{rest_id}/category")
-    public ResponseEntity<Object> createCategory(@PathVariable Long rest_id , @RequestBody CategoryEntity addCategory){
+    public ResponseEntity<Object> createCategory(@PathVariable long rest_id , @RequestBody CategoryEntity addCategory){
         try {
 
 
@@ -45,7 +45,7 @@ public class CategoryController {
     }
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @PutMapping("/restaurants/{rest_id}/category/{id}")
-    public ResponseEntity<Object> updateCategory(@PathVariable Long rest_id,@PathVariable Long id, @RequestBody CategoryEntity updatedCategory) {
+    public ResponseEntity<Object> updateCategory(@PathVariable long rest_id,@PathVariable long id, @RequestBody CategoryEntity updatedCategory) {
         try {
             CategoryResource updatedResource = categoryService.updateCategory(rest_id, id, updatedCategory);
             return ResponseEntity.ok(Map.of(
