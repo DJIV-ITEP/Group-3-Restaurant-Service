@@ -19,9 +19,4 @@ public interface RestaurantRepository extends JpaRepository<RestaurantEntity, Lo
     List<RestaurantEntity> findByFoodAndCuisineAndStatus(String food, String cuisine, String status);
     List<RestaurantEntity> findByFoodAndStatus(String food, String status);
     List<RestaurantEntity> findByCuisineAndStatus(String cuisine, String status);
-
-    @Transactional
-    @Modifying
-    @Query("update restaurants restaurant set restaurant.status = :status where restaurant.id = :id")
-    void updateStatus(@Param(value = "id") long id, @Param(value = "status") String status);
 }

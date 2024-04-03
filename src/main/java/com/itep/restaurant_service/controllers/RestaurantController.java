@@ -73,36 +73,6 @@ public class RestaurantController {
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @PutMapping("/restaurants/{restaurantId}/status")
     public ResponseEntity<Object> setRestaurantStatus(@PathVariable("restaurantId") long restaurantId, @RequestBody Map<String, Object> body){
-        var restaurantResource = restaurantService.getRestaurantDetails(restaurantId);
-        if(restaurantResource.isEmpty()){
-            return new ResponseEntity<>(
-                    Map.of("message", "Restaurant not found",
-                            "status", 404),
-                    HttpStatus.NOT_FOUND);
-        }
-        // check if the updated restaurant belong to the user who wants to update
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        var owner = restaurantService.getRestaurantOwner(restaurantId);
-        if (!auth.getName().equals(owner.get().getUsername())){
-            return new ResponseEntity<>(
-                    Map.of("message", "You don't have the permission to update this restaurant",
-                            "status", 403),
-                    HttpStatus.FORBIDDEN);
-
-        }
-
-        if("offline".equals(body.get("status"))||"online".equals(body.get("status"))) {
-            restaurantService.setRestaurantStatus(restaurantId, body.get("status").toString());
-            return new ResponseEntity<>(
-                    Map.of("message", "Restaurant status updated successfully",
-                            "status", 200)
-                    , HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(
-                    Map.of("message", "Restaurant status must be either 'offline' or 'online' only",
-                            "status", 400)
-                    , HttpStatus.BAD_REQUEST);
-        }
-
+        return  restaurantService.setRestaurantStatus(restaurantId, body);
     }
 }

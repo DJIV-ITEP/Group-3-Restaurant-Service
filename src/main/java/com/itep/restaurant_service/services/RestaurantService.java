@@ -4,9 +4,11 @@ import com.itep.restaurant_service.models.RestaurantResource;
 import com.itep.restaurant_service.models.UserResource;
 import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
 import com.itep.restaurant_service.repositories.entities.UserEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface RestaurantService {
@@ -20,5 +22,5 @@ public interface RestaurantService {
     Optional<UserEntity> getRestaurantOwner(long restaurantId);
     UserDetails getRestaurantUserByUsername(String username);
 
-    void setRestaurantStatus(long id, String status);
+    ResponseEntity<Object> setRestaurantStatus(long restaurantId, Map<String, Object> body);
 }
