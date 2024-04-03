@@ -35,7 +35,7 @@ public class MenuServiceImpl implements MenuService {
 
 
     @Override
-    public List<MenuResource> getMenues(Long rest_id, Long cat_id) throws Exception{
+    public List<MenuResource> getMenues(long rest_id, long cat_id) throws Exception{
         Optional<CategoryEntity> yourEntityOptional = categoryRepository.findById(cat_id);
         if (yourEntityOptional .isPresent()) {
             CategoryEntity yourEntity = yourEntityOptional.get();
@@ -61,7 +61,7 @@ public class MenuServiceImpl implements MenuService {
     }
 
     @Override
-    public MenuResource createMenu(Long rest_id, Long cat_id, MenuEntity body) throws Exception {
+    public MenuResource createMenu(long rest_id, long cat_id, MenuEntity body) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // Get the username of the current user
@@ -103,7 +103,7 @@ public class MenuServiceImpl implements MenuService {
     }
 
     @Override
-    public MenuResource updateMenu(Long rest_id, Long cat_id,Long id, MenuEntity body) throws Exception {
+    public MenuResource updateMenu(long rest_id, long cat_id,long id, MenuEntity body) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // Get the username of the current user
@@ -145,7 +145,7 @@ public class MenuServiceImpl implements MenuService {
     }
 
     @Override
-    public void deleteMenu(Long rest_id, Long cat_id,Long id) throws Exception {
+    public void deleteMenu(long rest_id, long cat_id,long id) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // Get the username of the current user

@@ -29,7 +29,7 @@ public class MenuItemServiceImpl implements MenuItemService {
     @Autowired
     private CategoryRepository categoryRepository;
     @Override
-    public List<ItemResource> getItems(Long rest_id, Long cat_id,Long menu_id) throws Exception {
+    public List<ItemResource> getItems(long rest_id, long cat_id,long menu_id) throws Exception {
         Optional<MenuEntity> yourEntityOptional = menuRepository.findById(menu_id);
         if (yourEntityOptional.isPresent()) {
             MenuEntity yourEntity = yourEntityOptional.get();
@@ -60,7 +60,7 @@ public class MenuItemServiceImpl implements MenuItemService {
     }
 
     @Override
-    public ItemResource createItem(Long rest_id,Long cat_id,Long menu_id, ItemEntity body) throws Exception {
+    public ItemResource createItem(long rest_id,long cat_id,long menu_id, ItemEntity body) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // Get the username of the current user
@@ -111,7 +111,7 @@ public class MenuItemServiceImpl implements MenuItemService {
     }
 
     @Override
-    public ItemResource updateItem(Long rest_id,Long cat_id,Long menu_id,Long id, ItemEntity body) throws Exception {
+    public ItemResource updateItem(long rest_id,long cat_id,long menu_id,long id, ItemEntity body) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // Get the username of the current user
@@ -153,7 +153,7 @@ public class MenuItemServiceImpl implements MenuItemService {
     }
 
     @Override
-    public void deleteItem(Long rest_id,Long cat_id,Long menu_id,Long id) throws Exception {
+    public void deleteItem(long rest_id,long cat_id,long menu_id,long id) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // Get the username of the current user

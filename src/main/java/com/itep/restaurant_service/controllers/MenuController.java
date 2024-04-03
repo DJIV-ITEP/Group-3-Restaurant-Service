@@ -64,18 +64,17 @@ public class MenuController {
     public ResponseEntity<Object> createMenu(@PathVariable Long rest_id, @PathVariable Long cat_id ,@RequestBody MenuEntity addMenu){
         try {
             MenuResource addResource = menuService.createMenu(rest_id,cat_id, addMenu);
-            return ResponseEntity.ok(Map.of(
+            return new ResponseEntity<>(Map.of(
                     "message","Menu created successfully",
-                    "status",200,
-                    "data",addResource
-            ));
+                    "status",200
+            ), HttpStatus.OK);
 
         }
         catch (Exception e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+            return new ResponseEntity<>(
                     Map.of("message",e.getMessage(),
                             "status", 400)
-            );
+            ,HttpStatus.BAD_REQUEST);
 
         }
     }
@@ -86,8 +85,7 @@ public class MenuController {
             MenuResource updatedResource = menuService.updateMenu(rest_id,cat_id,id, updatedMenu);
             return ResponseEntity.ok(Map.of(
                     "message", "Menu updated successfully",
-                    "status", 200,
-                    "data", updatedResource
+                    "status", 200
             ));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(

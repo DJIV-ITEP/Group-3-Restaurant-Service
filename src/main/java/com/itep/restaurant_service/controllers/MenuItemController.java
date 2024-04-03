@@ -36,8 +36,8 @@ public class MenuItemController {
             ItemResource addResource = menuItemService.createItem(rest_id,cat_id,menu_id, addItem);
             return ResponseEntity.ok(Map.of(
                     "message","Menu Item created successfully",
-                    "status",200,
-                    "data",addResource
+                    "status",200
+
             ));
         }
         catch (Exception e){
@@ -54,8 +54,7 @@ public class MenuItemController {
             ItemResource updatedResource = menuItemService.updateItem(rest_id,cat_id,menu_id,id, updatedItem);
             return ResponseEntity.ok(Map.of(
                     "message", "Menu Item updated successfully",
-                    "status", 200,
-                    "data", updatedResource
+                    "status", 200
             ));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(

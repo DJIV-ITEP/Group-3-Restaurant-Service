@@ -1,99 +1,192 @@
 package com.itep.restaurant_service.controllers;
 
-import com.itep.restaurant_service.models.CategoryResource;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.itep.restaurant_service.models.MenuResource;
+import com.itep.restaurant_service.repositories.MenuRepository;
+import com.itep.restaurant_service.repositories.UserRepository;
 import com.itep.restaurant_service.repositories.entities.CategoryEntity;
 import com.itep.restaurant_service.repositories.entities.MenuEntity;
 import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
+import com.itep.restaurant_service.repositories.entities.UserEntity;
+import com.itep.restaurant_service.security.WebSecurityConfig;
 import com.itep.restaurant_service.services.impl.MenuServiceImpl;
+import com.itep.restaurant_service.services.impl.RestaurantServiceImpl;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Mockito.when;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-
-@RunWith(MockitoJUnitRunner.class)
+@WebMvcTest(MenuController.class)
+@ExtendWith(SpringExtension.class)
+@Import(WebSecurityConfig.class)
 public class MenuControllerTest {
-    @Mock
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    MenuRepository menuRepository;
+    @MockBean
+    UserRepository userRepository;
+    @MockBean
+    private RestaurantServiceImpl restaurantService;
+    @MockBean
     private MenuServiceImpl menuService;
 
-    @InjectMocks
-    private MenuController menuController;
 
     @Test
-    public void testGetMenus() throws Exception{
-        List<MenuResource> menus = new ArrayList<>();
-        RestaurantEntity res = new RestaurantEntity();
-        CategoryEntity cat = new CategoryEntity(1L,"cat1",res,null);
-        menus.add(new MenuResource(1L, "Menu 1",cat.getId()));
-        menus.add(new MenuResource(2L, "Menu 2",cat.getId()));
+    @WithMockUser()
+    void testGetMenu_Empty() throws Exception {
+        List<MenuResource> result = new ArrayList<>();
+        when(menuService.getMenues(1,1))
+                .thenReturn(result);
 
-
-        Mockito.when(menuService.getMenues(1L,1L)).thenReturn(menus);
-
-        List<MenuResource> result = menuController.getMenus(1L,1L);
-
-        assertEquals(2, result.size());
-        assertEquals("Menu 1", result.get(0).getName());
-        assertEquals("Menu 2", result.get(1).getName());
+        mockMvc.perform(MockMvcRequestBuilders.get("/restaurants/1/category/1/menus"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
     @Test
-    public void testCreateMenu() throws Exception {
-        MenuEntity newMenu = new MenuEntity(1L,"New Menu", null, null);
-        RestaurantEntity res = new RestaurantEntity();
-        CategoryEntity cat = new CategoryEntity(1L,"cat1",res,null);
-        MenuResource newMenuResource = new MenuResource(1L, "New Menu",cat.getId());
+    @WithMockUser()
+    void testGetMenu_NotEmpty() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1L, "name", "address", "location", "status", "food", "cuisine", new UserEntity("owner", "owner"), null);
+        CategoryEntity category = new CategoryEntity(1L,"name", restaurant,null);
+        MenuEntity menu1 = new MenuEntity(1L,"menu 1",category,null);
+
+        List<MenuResource> result = new ArrayList<>();
+        result.add(menu1.toMenuResource());
+
+        when(menuService.getMenues(1L,1L))
+                .thenReturn(result);
+        mockMvc.perform(MockMvcRequestBuilders.get("/restaurants/1/category/1/menus"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$",hasSize(1)))
+                .andExpect(jsonPath("$[0].*",hasSize(3)))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].id", equalTo(((int) result.get(0).getId()))))
+                .andExpect(jsonPath("$[0].name", equalTo(result.get(0).getName())))
+                .andExpect(jsonPath("$[0].category", equalTo((int) result.get(0).getCategory())))
+
+                ;
+    }
+    @Test
+    @WithMockUser()
+    public void testCreateMenu_noUser() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
+        MenuEntity menu1 = new MenuEntity(1L,"menu 1",category,null);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+        String requestJson=ow.writeValueAsString(menu1);
+        mockMvc.perform(MockMvcRequestBuilders.post("/restaurants/1/category/1/menus").contentType(APPLICATION_JSON)
+                        .content(requestJson).with(csrf()))
+                .andExpect(status().isForbidden());
+    }
 
 
-        Mockito.when(menuService.createMenu(1L,1L,Mockito.any(MenuEntity.class))).thenReturn(newMenuResource);
-
-        ResponseEntity<Object> response = menuController.createMenu(1L,1L,newMenu);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("Menu created successfully", ((Map<?, ?>) response.getBody()).get("message"));
+    @Test
+    @WithMockUser(roles = "RESTAURANT")
+    public void testCreateMenu_restaurantOwner() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
+        MenuEntity menu1 = new MenuEntity(1,"menu 1",category,null);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+        String requestJson=ow.writeValueAsString(menu1);
+        mockMvc.perform(MockMvcRequestBuilders.post("/restaurants/1/category/1/menus").contentType(APPLICATION_JSON)
+                        .content(requestJson).with(csrf()))
+                .andExpect(status().isOk());
     }
 
     @Test
-    public void testUpdateMenu() throws Exception {
-        long id = 1L;
-        long rest_id = 1L;
-        long cat_id = 1L;
-        MenuEntity updatedMenu = new MenuEntity(1L,"Updated Menu", null, null);
-        RestaurantEntity res = new RestaurantEntity();
-        CategoryEntity cat = new CategoryEntity(1L,"cat1",res,null);
-        MenuResource updatedMenuResource = new MenuResource(id, "Updated Menu",cat.getId());
+    @WithMockUser()
+    public void testUpdateMenu_notuser() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
+        MenuEntity menu1 = new MenuEntity(1L,"menu 1",category,null);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+        String requestJson=ow.writeValueAsString(menu1);
+        mockMvc.perform(MockMvcRequestBuilders.put("/restaurants/1/category/1/menus/1").contentType(APPLICATION_JSON)
+                        .content(requestJson).with(csrf()))
+                .andExpect(status().isForbidden());
 
-
-        Mockito.when(menuService.updateMenu(Mockito.eq(rest_id),Mockito.eq(cat_id),Mockito.eq(id), Mockito.any(MenuEntity.class))).thenReturn(updatedMenuResource);
-
-        ResponseEntity<Object> response = menuController.updateMenu(rest_id,cat_id,id, updatedMenu);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("Menu updated successfully", ((Map<?, ?>) response.getBody()).get("message"));
     }
+
 
     @Test
-    public void testDeleteMenu() throws Exception {
-        long id = 1L;
-        long rest_id = 1L;
-        long cat_id = 1L;
+    @WithMockUser(roles = "RESTAURANT")
+    public void testUpdateMenu_restaurantOwner() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
+        MenuEntity menu1 = new MenuEntity(1,"menu 1",category,null);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+        String requestJson=ow.writeValueAsString(menu1);
+        mockMvc.perform(MockMvcRequestBuilders.put("/restaurants/1/category/1/menus/1").contentType(APPLICATION_JSON)
+                        .content(requestJson).with(csrf()))
+                .andExpect(status().isOk());
 
-        ResponseEntity<Object> response = menuController.deleteMenu(rest_id,cat_id,id);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("Menu deleted successfully", ((Map<?, ?>) response.getBody()).get("message"));
     }
+
+
+    @Test
+    @WithMockUser()
+    public void testDeleteMenu_notuser() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
+        MenuEntity menu1 = new MenuEntity(1,"menu 1",category,null);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+        String requestJson=ow.writeValueAsString(menu1);
+        mockMvc.perform(MockMvcRequestBuilders.delete("/restaurants/1/category/1/menus/1").contentType(APPLICATION_JSON)
+                        .content(requestJson).with(csrf()))
+                .andExpect(status().isForbidden());
+
+    }
+
+
+
+    @Test
+    @WithMockUser(roles = "RESTAURANT")
+    public void testDeleteMenu_restaurantOwner() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
+        MenuEntity menu1 = new MenuEntity(1,"menu 1",category,null);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+        String requestJson=ow.writeValueAsString(menu1);
+        mockMvc.perform(MockMvcRequestBuilders.delete("/restaurants/1/category/1/menus/1").contentType(APPLICATION_JSON)
+                        .content(requestJson).with(csrf()))
+                .andExpect(status().isOk());
+
+    }
+
 
 
 

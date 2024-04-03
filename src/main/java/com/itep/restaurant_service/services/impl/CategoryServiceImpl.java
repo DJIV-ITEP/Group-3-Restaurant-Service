@@ -30,7 +30,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Autowired
     private RestaurantRepository restaurantRepository;
     @Override
-    public List<CategoryResource> getCategory(Long rest_id) {
+    public List<CategoryResource> getCategory(long rest_id) {
         return categoryRepository.findByRestaurantId(rest_id).stream()
                 .map(CategoryEntity::toCategoryResource)
                 .collect(Collectors.toList());
@@ -38,7 +38,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public CategoryResource createCategory(Long rest_id, CategoryEntity body) throws Exception {
+    public CategoryResource createCategory(long rest_id, CategoryEntity body) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // Get the username of the current user
@@ -75,7 +75,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public CategoryResource updateCategory(Long rest_id,Long id, CategoryEntity body) throws Exception {
+    public CategoryResource updateCategory(long rest_id,Long id, CategoryEntity body) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // Get the username of the current user
@@ -105,7 +105,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public void deleteCategory(Long rest_id,Long id) throws Exception {
+    public void deleteCategory(long rest_id,long id) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // Get the username of the current user
