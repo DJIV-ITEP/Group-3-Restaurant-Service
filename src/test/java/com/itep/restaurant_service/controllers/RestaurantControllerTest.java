@@ -9,15 +9,20 @@ import com.itep.restaurant_service.repositories.UserRepository;
 import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
 import com.itep.restaurant_service.repositories.entities.UserEntity;
 import com.itep.restaurant_service.security.WebSecurityConfig;
+import com.itep.restaurant_service.services.RestaurantService;
 import com.itep.restaurant_service.services.impl.RestaurantServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.event.annotation.PrepareTestInstance;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -29,6 +34,7 @@ import java.util.Optional;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -242,17 +248,24 @@ public class RestaurantControllerTest {
                         .content(statusJson).with(csrf()))
                 .andExpect(status().isForbidden());
     }
+
     @Test
     @WithMockUser(username = "username", password = "password",roles= "RESTAURANT")
     void testSetRestaurantStatus_RestaurantNotFound() throws Exception {
-        when(restaurantService.getRestaurantDetails(1))
-                .thenReturn(Optional.empty());
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
         ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
         Map<String, Object> statusMap = Map.of("status", "online");
         String statusJson=ow.writeValueAsString(statusMap);
 
+        when(restaurantService.setRestaurantStatus(1, statusMap))
+                .thenReturn(new ResponseEntity<>(
+                        Map.of("message", "Restaurant not found",
+                                "status", 404),
+                        HttpStatus.NOT_FOUND));
+//        TODO figure out how to implement this
+//        when(restaurantRepository.findById(1L))
+//                .thenReturn(Optional.empty());
         mockMvc.perform(MockMvcRequestBuilders.put("/restaurants/1/status").contentType(APPLICATION_JSON)
                         .content(statusJson).with(csrf()))
                 .andExpect(status().isNotFound());
@@ -261,16 +274,21 @@ public class RestaurantControllerTest {
     @WithMockUser(username = "username", password = "password",roles= "RESTAURANT")
     void testSetRestaurantStatus_HasRestaurantRoleAndNotOwnIt() throws Exception {
         RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", null, null);
-        when(restaurantService.getRestaurantDetails(1))
-                .thenReturn(Optional.of(restaurant1.toRestaurantResource()));
-        when(restaurantService.getRestaurantOwner(1))
-                .thenReturn(Optional.of(new UserEntity("another", "password")));
+//        when(restaurantService.getRestaurantDetails(1))
+//                .thenReturn(Optional.of(restaurant1.toRestaurantResource()));
+//        when(restaurantService.getRestaurantOwner(1))
+//                .thenReturn(Optional.of(new UserEntity("another", "password")));
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
         ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
         Map<String, Object> statusMap = Map.of("status", "online");
         String statusJson=ow.writeValueAsString(statusMap);
+        when(restaurantService.setRestaurantStatus(1, statusMap))
+                .thenReturn(new ResponseEntity<>(
+                        Map.of("message", "You don't have the permission to update this restaurant",
+                                "status", 403),
+                        HttpStatus.FORBIDDEN));
 
         mockMvc.perform(MockMvcRequestBuilders.put("/restaurants/1/status").contentType(APPLICATION_JSON)
                         .content(statusJson).with(csrf()))
@@ -281,8 +299,8 @@ public class RestaurantControllerTest {
     @WithMockUser(username = "username", password = "password",roles= "RESTAURANT")
     void testSetRestaurantStatus_HasRestaurantRoleAndOwnIt() throws Exception {
         RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", null, null);
-        when(restaurantService.getRestaurantDetails(1))
-                .thenReturn(Optional.of(restaurant.toRestaurantResource()));
+        when(restaurantRepository.findById(1L))
+                .thenReturn(Optional.of(restaurant));
         when(restaurantService.getRestaurantOwner(1))
                 .thenReturn(Optional.of(new UserEntity("username", "password")));
 
