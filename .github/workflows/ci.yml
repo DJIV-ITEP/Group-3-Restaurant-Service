@@ -1,9 +1,11 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - category-test
+  release:
+    types: [ created ]
+#  push:
+#    branches:
+#      - category-test
 
 jobs:
   build:
