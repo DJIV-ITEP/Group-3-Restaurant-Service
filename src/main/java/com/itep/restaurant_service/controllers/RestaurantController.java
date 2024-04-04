@@ -72,6 +72,7 @@ public class RestaurantController {
 
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @PutMapping("/restaurants/{restaurantId}/status")
+
     public ResponseEntity<Object> setRestaurantStatus(@PathVariable("restaurantId") long restaurantId, @RequestBody Map<String, Object> body){
         return  restaurantService.setRestaurantStatus(restaurantId, body);
     }
