@@ -19,8 +19,9 @@ public interface RestaurantService {
     RestaurantResource createRestaurant(RestaurantEntity body) throws Exception;
 
     Optional<RestaurantResource> getRestaurantDetails(long restaurantId);
+    Optional<RestaurantEntity> getRestaurantEntity(long restaurantId);
     Optional<UserEntity> getRestaurantOwner(long restaurantId);
     UserDetails getRestaurantUserByUsername(String username);
 
-    ResponseEntity<Object> setRestaurantStatus(long restaurantId, Map<String, Object> body);
+    void setRestaurantStatus(RestaurantEntity restaurant);
 }
