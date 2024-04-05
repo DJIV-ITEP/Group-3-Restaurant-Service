@@ -30,20 +30,45 @@ public class CategoryServiceImpl implements CategoryService {
     @Autowired
     private RestaurantRepository restaurantRepository;
     @Override
-    public List<CategoryResource> getCategory(long rest_id) {
-        return categoryRepository.findByRestaurantId(rest_id).stream()
-                .map(CategoryEntity::toCategoryResource)
-                .collect(Collectors.toList());
+    public List<CategoryResource> getCategory(long restaurantId) {
+        Optional<RestaurantEntity> yourEntityOptional = restaurantRepository.findById(restaurantId);
+        if (yourEntityOptional.isPresent()) {
+            return categoryRepository.findByRestaurantId(restaurantId).stream()
+                    .map(CategoryEntity::toCategoryResource)
+                    .collect(Collectors.toList());
+        }
+        else{
+            throw new EntityNotFoundException("Restaurant with id " + restaurantId + " not found");
+        }
 
     }
 
     @Override
-    public CategoryResource createCategory(long rest_id, CategoryEntity body) throws Exception {
+    public Optional<CategoryResource> getCategoryDetails(long restaurantId, long categoryId) {
+        Optional<RestaurantEntity> yourEntityOptional = restaurantRepository.findById(restaurantId);
+        if (yourEntityOptional.isPresent()) {
+            Optional<CategoryEntity> categoryEntity = categoryRepository.findById(categoryId);
+            if(categoryEntity.isPresent()){
+                return categoryEntity.map(CategoryEntity::toCategoryResource);
+            }
+            else {
+                throw new EntityNotFoundException("Category with id " + categoryId + " not found");
+            }
+
+        }
+        else{
+            throw new EntityNotFoundException("Restaurant with id " + restaurantId + " not found");
+        }
+
+    }
+
+    @Override
+    public CategoryResource createCategory(long restaurantId, CategoryEntity body) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // Get the username of the current user
         String username = authentication.getName();
-        Optional<RestaurantEntity> yourEntityOptional = restaurantRepository.findById(rest_id);
+        Optional<RestaurantEntity> yourEntityOptional = restaurantRepository.findById(restaurantId);
         if (yourEntityOptional.isPresent()) {
             RestaurantEntity yourEntity = yourEntityOptional.get();
             if(Objects.equals(yourEntity.getOwner().getUsername(), username)){
@@ -64,18 +89,18 @@ public class CategoryServiceImpl implements CategoryService {
 
             }
             else {
-                throw new Exception("you are not the owner of Restaurant "+yourEntity.getName());
+                throw new EntityNotFoundException("you are not the owner of Restaurant "+yourEntity.getName());
             }
 
         }
         else{
-            throw new EntityNotFoundException("Restaurant with id " + rest_id + " not found");
+            throw new EntityNotFoundException("Restaurant with id " + restaurantId + " not found");
         }
 
     }
 
     @Override
-    public CategoryResource updateCategory(long rest_id,Long id, CategoryEntity body) throws Exception {
+    public CategoryResource updateCategory(long restaurantId,long id, CategoryEntity body) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // Get the username of the current user
@@ -84,7 +109,7 @@ public class CategoryServiceImpl implements CategoryService {
 
         CategoryEntity existCategory = categoryRepository.findById(id)
                 .orElseThrow(() -> new Exception("category not found"));
-        if(existCategory.getRestaurant().getId() == rest_id){
+        if(existCategory.getRestaurant().getId() == restaurantId){
             if(Objects.equals(existCategory.getRestaurant().getOwner().getUsername(), username)){
                 existCategory.setName(body.getName());
                 try {
@@ -105,7 +130,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public void deleteCategory(long rest_id,long id) throws Exception {
+    public void deleteCategory(long restaurantId,long id) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // Get the username of the current user
@@ -115,7 +140,7 @@ public class CategoryServiceImpl implements CategoryService {
         CategoryEntity existCategory = categoryRepository.findById(id)
                 .orElseThrow(() -> new Exception("category not found"));
 
-        if(existCategory.getRestaurant().getId() == rest_id){
+        if(existCategory.getRestaurant().getId() == restaurantId){
             if(Objects.equals(existCategory.getRestaurant().getOwner().getUsername(), username)){
                 try{
                     categoryRepository.deleteById(id);

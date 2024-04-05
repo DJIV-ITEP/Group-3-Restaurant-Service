@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.itep.restaurant_service.models.CategoryResource;
 import com.itep.restaurant_service.models.MenuResource;
+import com.itep.restaurant_service.models.RestaurantResource;
 import com.itep.restaurant_service.repositories.CategoryRepository;
 import com.itep.restaurant_service.repositories.MenuRepository;
 import com.itep.restaurant_service.repositories.UserRepository;
@@ -26,10 +27,12 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -47,8 +50,7 @@ public class CategoryControllerTest {
 
     @MockBean
     CategoryRepository categoryRepository;
-    @MockBean
-    UserRepository userRepository;
+
     @MockBean
     private RestaurantServiceImpl restaurantService;
     @MockBean
@@ -70,18 +72,19 @@ public class CategoryControllerTest {
     @Test
     @WithMockUser()
     void testGetCategory_NotEmpty() throws Exception {
-        RestaurantEntity restaurant = new RestaurantEntity(1L, "name", "address", "location", "status", "food", "cuisine", new UserEntity("owner", "owner"), null);
-        CategoryEntity category = new CategoryEntity(1L,"name", restaurant,null);
-
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("owner", "owner"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
+        CategoryEntity category2 = new CategoryEntity(2,"name 2", restaurant,null);
 
         List<CategoryResource> result = new ArrayList<>();
         result.add(category.toCategoryResource());
+        result.add(category2.toCategoryResource());
 
         when(categoryService.getCategory(1))
                 .thenReturn(result);
         mockMvc.perform(MockMvcRequestBuilders.get("/restaurants/1/category"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$",hasSize(1)))
+                .andExpect(jsonPath("$",hasSize(2)))
                 .andExpect(jsonPath("$[0].*",hasSize(3)))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].id", equalTo(((int) result.get(0).getId()))))
@@ -89,6 +92,34 @@ public class CategoryControllerTest {
                 .andExpect(jsonPath("$[0].restaurant", equalTo((int) result.get(0).getRestaurant())))
 
                 ;
+    }
+    @Test
+    @WithMockUser()
+    void testGetCategoryDetail_NotFound() throws Exception {
+
+        when(categoryService.getCategoryDetails(1,0))
+                .thenReturn(Optional.empty());
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/restaurants/1/category/0"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+    @Test
+    @WithMockUser()
+    void testGetRestaurantDetail_Found() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        Optional<CategoryResource> result = Optional.of(new CategoryResource(1, "name", restaurant.getId()));
+        when(categoryService.getCategoryDetails(1,1))
+                .thenReturn(result);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/restaurants/1/category/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.*", hasSize(3)))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id", equalTo(((int) result.get().getId()))))
+                .andExpect(jsonPath("$.name", equalTo(result.get().getName())))
+                .andExpect(jsonPath("$.restaurant", equalTo((int) result.get().getRestaurant())))
+        ;
     }
     @Test
     @WithMockUser()
@@ -114,10 +145,13 @@ public class CategoryControllerTest {
         mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
         ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
         String requestJson=ow.writeValueAsString(category);
-        mockMvc.perform(MockMvcRequestBuilders.post("/restaurants/1/category").contentType(APPLICATION_JSON)
+         mockMvc.perform(MockMvcRequestBuilders.post("/restaurants/1/category")
+                        .contentType(APPLICATION_JSON)
                         .content(requestJson).with(csrf()))
-                .andExpect(status().isOk());
+                        .andExpect(status().isOk()
+                );
     }
+
 
 
     @Test
