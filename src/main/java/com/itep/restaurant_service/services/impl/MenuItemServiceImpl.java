@@ -1,5 +1,6 @@
 package com.itep.restaurant_service.services.impl;
 
+import com.itep.restaurant_service.models.CategoryResource;
 import com.itep.restaurant_service.models.ItemResource;
 import com.itep.restaurant_service.repositories.CategoryRepository;
 import com.itep.restaurant_service.repositories.MenuItemRepository;
@@ -55,6 +56,41 @@ public class MenuItemServiceImpl implements MenuItemService {
         }
         else{
             throw new EntityNotFoundException("Menu with id " + menu_id + " not found");
+        }
+
+    }
+
+    @Override
+    public Optional<ItemResource> getItemsDetails(long rest_id, long cat_id, long menu_id, long item_id) throws Exception {
+        Optional<ItemEntity> yourEntityOptional = menuItemRepository.findById(item_id);
+        if (yourEntityOptional.isPresent()) {
+            ItemEntity yourEntity = yourEntityOptional.get();
+            if(yourEntity.getMenu().getId() == menu_id){
+                if(yourEntity.getMenu().getCategory().getId() == cat_id){
+                    if(yourEntity.getMenu().getCategory().getRestaurant().getId() == rest_id){
+                        try{
+                            return yourEntityOptional.map(ItemEntity::toItemResource);
+                        }
+                        catch (Exception e){
+                            throw new Exception(e.getMessage());
+                        }
+
+                    }
+                    else{
+                        throw new EntityNotFoundException("Category with id " + cat_id + " not belong to Restaurant");
+                    }
+                }
+                else{
+                    throw new EntityNotFoundException("Menu with id " + menu_id + " not belong to Category");
+                }
+            }
+            else{
+                throw new EntityNotFoundException("item with id " + item_id + " not belong to menu");
+            }
+
+        }
+        else{
+            throw new EntityNotFoundException("item with id " + item_id + " not found");
         }
 
     }

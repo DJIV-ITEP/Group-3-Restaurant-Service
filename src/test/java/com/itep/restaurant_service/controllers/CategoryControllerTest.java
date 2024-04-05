@@ -106,7 +106,7 @@ public class CategoryControllerTest {
     }
     @Test
     @WithMockUser()
-    void testGetRestaurantDetail_Found() throws Exception {
+    void testGetCategoryDetail_Found() throws Exception {
         RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
         Optional<CategoryResource> result = Optional.of(new CategoryResource(1, "name", restaurant.getId()));
         when(categoryService.getCategoryDetails(1,1))

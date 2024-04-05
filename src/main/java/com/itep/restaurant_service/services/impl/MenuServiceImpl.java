@@ -5,6 +5,7 @@ import com.itep.restaurant_service.repositories.CategoryRepository;
 import com.itep.restaurant_service.repositories.MenuRepository;
 import com.itep.restaurant_service.repositories.RestaurantRepository;
 import com.itep.restaurant_service.repositories.entities.CategoryEntity;
+import com.itep.restaurant_service.repositories.entities.ItemEntity;
 import com.itep.restaurant_service.repositories.entities.MenuEntity;
 import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
 import com.itep.restaurant_service.services.MenuService;
@@ -55,6 +56,35 @@ public class MenuServiceImpl implements MenuService {
         }
         else{
             throw new EntityNotFoundException("Category with id " + cat_id + " not found");
+        }
+
+
+    }
+    @Override
+    public Optional<MenuResource> getMenueDetails(long rest_id, long cat_id, long menu_id) throws Exception{
+        Optional<MenuEntity> yourEntityOptional = menuRepository.findById(menu_id);
+        if (yourEntityOptional .isPresent()) {
+            MenuEntity yourEntity = yourEntityOptional.get();
+            if(yourEntity.getCategory().getId() == cat_id){
+                if(yourEntity.getCategory().getRestaurant().getId() == rest_id){
+                    try{
+                        return yourEntityOptional.map(MenuEntity::toMenuResource);
+                    }
+                    catch (Exception e){
+                        throw new Exception(e.getMessage());
+                    }
+                }
+                else{
+                    throw new EntityNotFoundException("Category with id " + cat_id + " not belong to Restaurant");
+                }
+            }
+            else {
+                throw new EntityNotFoundException("Menu with id " + menu_id + " not belong to Category");
+            }
+
+        }
+        else{
+            throw new EntityNotFoundException("menu with id " + menu_id + " not found");
         }
 
 

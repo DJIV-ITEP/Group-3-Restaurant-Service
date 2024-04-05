@@ -37,6 +37,18 @@ public class MenuItemController {
         }
 
     }
+    @GetMapping("/restaurants/{rest_id}/category/{cat_id}/menus/{menu_id}/item/{item_id}")
+    public ResponseEntity<Object> getItemDetails(@PathVariable long rest_id, @PathVariable long cat_id, @PathVariable long menu_id, @PathVariable long item_id) throws Exception {
+        var itemResource = menuItemService.getItemsDetails(rest_id,cat_id,menu_id,item_id);
+        return itemResource.<ResponseEntity<Object>>map(
+                        resource -> new ResponseEntity<>(
+                                resource, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(
+                        Map.of("message", "item not found",
+                                "status", 404)
+                        , HttpStatus.NOT_FOUND));
+
+    }
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @PostMapping("/restaurants/{rest_id}/category/{cat_id}/menus/{menu_id}/item")
     public ResponseEntity<Object> createItem(@PathVariable Long rest_id,@PathVariable Long cat_id,@PathVariable Long menu_id,@RequestBody ItemEntity addItem) throws Exception {
@@ -50,6 +62,7 @@ public class MenuItemController {
 
 
     }
+
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @PutMapping("/restaurants/{rest_id}/category/{cat_id}/menus/{menu_id}/item/{id}")
     public  ResponseEntity<Object> updateItem(@PathVariable Long rest_id,@PathVariable Long cat_id,@PathVariable Long menu_id,@PathVariable Long id, @RequestBody ItemEntity updatedItem) throws Exception {
