@@ -1,11 +1,11 @@
 name: CI
 
 on:
-#  release:
-#    types: [ created ]
-  push:
-    branches:
-      - workflow-building
+  release:
+    types: [ created ]
+#  push:
+#    branches:
+#      - workflow-building
 
 jobs:
   build:
