@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.itep.restaurant_service.models.ItemResource;
+import com.itep.restaurant_service.models.MenuResource;
 import com.itep.restaurant_service.repositories.MenuItemRepository;
 import com.itep.restaurant_service.repositories.UserRepository;
 import com.itep.restaurant_service.repositories.entities.*;
@@ -27,6 +28,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -101,6 +103,40 @@ public class MenuItemControllerTest {
 
 
 
+    }
+
+    @Test
+    @WithMockUser()
+    void testGetItemDetail_NotFound() throws Exception {
+
+        when(menuItemService.getItemsDetails(1,1,1,0))
+                .thenReturn(Optional.empty());
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/restaurants/1/category/1/menus/1/item/0"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+    @Test
+    @WithMockUser()
+    void testGetItemDetail_Found() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
+        MenuEntity menu = new MenuEntity(1,"menu 1",category,null);
+        ItemEntity item = new ItemEntity(1, "item 1", "description",1200, menu);
+        Optional<ItemResource> result = Optional.of(new ItemResource(1, "item 1",1200,"description", menu.getId()));
+        when(menuItemService.getItemsDetails(1,1,1,1))
+                .thenReturn(result);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/restaurants/1/category/1/menus/1/item/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.*", hasSize(5)))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id", equalTo(((int) result.get().getId()))))
+                .andExpect(jsonPath("$.name", equalTo(result.get().getName())))
+                .andExpect(jsonPath("$.description", equalTo(result.get().getDescription())))
+                .andExpect(jsonPath("$.price", equalTo((double) result.get().getPrice())))
+                .andExpect(jsonPath("$.menu", equalTo((int)result.get().getMenu())))
+        ;
     }
 
     @Test

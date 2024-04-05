@@ -3,6 +3,7 @@ package com.itep.restaurant_service.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.itep.restaurant_service.models.CategoryResource;
 import com.itep.restaurant_service.models.MenuResource;
 import com.itep.restaurant_service.repositories.MenuRepository;
 import com.itep.restaurant_service.repositories.UserRepository;
@@ -28,6 +29,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -87,6 +89,37 @@ public class MenuControllerTest {
                 .andExpect(jsonPath("$[0].category", equalTo((int) result.get(0).getCategory())))
 
                 ;
+    }
+
+    @Test
+    @WithMockUser()
+    void testGetMenuDetail_NotFound() throws Exception {
+
+        when(menuService.getMenueDetails(1,1,0))
+                .thenReturn(Optional.empty());
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/restaurants/1/category/1/menus/0"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+    @Test
+    @WithMockUser()
+    void testGetMenuDetail_Found() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
+
+        Optional<MenuResource> result = Optional.of(new MenuResource(1, "menu 1", category.getId()));
+        when(menuService.getMenueDetails(1,1,1))
+                .thenReturn(result);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/restaurants/1/category/1/menus/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.*", hasSize(3)))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id", equalTo(((int) result.get().getId()))))
+                .andExpect(jsonPath("$.name", equalTo(result.get().getName())))
+                .andExpect(jsonPath("$.category", equalTo((int) result.get().getCategory())))
+        ;
     }
     @Test
     @WithMockUser()
