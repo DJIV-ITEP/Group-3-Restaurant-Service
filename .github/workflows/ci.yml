@@ -37,6 +37,10 @@ jobs:
       - name: Build with Maven
         run: mvn -B package --file pom.xml
 
+      - name: Save JAR file
+        run: mv target/*.jar app.jar
+        working-directory: ./Group-3-Restaurant-Service
+
       - name: Run tests
         run: mvn test --file pom.xml
   deploy:
