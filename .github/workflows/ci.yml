@@ -39,7 +39,7 @@ jobs:
 
       - name: Save JAR file
         run: mv target/*.jar app.jar
-#        working-directory: ./your-project-directory
+        working-directory: ./
 
       - name: Run tests
         run: mvn test --file pom.xml
