@@ -18,60 +18,66 @@ public class CategoryController {
     public CategoryController(CategoryServiceImpl categoryService) {
         this.categoryService = categoryService;
     }
-    @GetMapping("/restaurants/{rest_id}/category")
-    public List<CategoryResource> getCategory(@PathVariable long rest_id){
-        return categoryService.getCategory(rest_id);
+    @GetMapping("/restaurants/{restaurantId}/category")
+    public ResponseEntity<Object> getCategory(@PathVariable long restaurantId){
+
+        List<CategoryResource> result = categoryService.getCategory(restaurantId);
+        if(!result.isEmpty()){
+            return new ResponseEntity<>(result,HttpStatus.OK);
+        }
+        else {
+            return new ResponseEntity<>(
+                    Map.of("message","no Category found for this restaurant", "status",200)
+                    , HttpStatus.OK
+            );
+        }
+
+    }
+
+    @GetMapping("/restaurants/{restaurantId}/category/{categoryId}")
+    public ResponseEntity<Object> getCategory(@PathVariable long restaurantId,@PathVariable long categoryId){
+        var categoryResource = categoryService.getCategoryDetails(restaurantId,categoryId);
+        return categoryResource.<ResponseEntity<Object>>map(
+                        resource -> new ResponseEntity<>(
+                                resource, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(
+                        Map.of("message", "Category not found",
+                                "status", 404)
+                        , HttpStatus.NOT_FOUND));
+
     }
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
-    @PostMapping("/restaurants/{rest_id}/category")
-    public ResponseEntity<Object> createCategory(@PathVariable long rest_id , @RequestBody CategoryEntity addCategory){
-        try {
+    @PostMapping("/restaurants/{restaurantId}/category")
+    public ResponseEntity<Object> createCategory(@PathVariable long restaurantId , @RequestBody CategoryEntity addCategory) throws Exception {
 
-
-            CategoryResource addResource = categoryService.createCategory(rest_id,addCategory);
+        CategoryResource addResource = categoryService.createCategory(restaurantId,addCategory);
             return ResponseEntity.ok(Map.of(
                     "message","Category created successfully",
                     "status",200
             ));
 
-        }
-        catch (Exception e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                    Map.of("message",e.getMessage(),
-                            "status", 400)
-            );
 
-        }
+
     }
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
-    @PutMapping("/restaurants/{rest_id}/category/{id}")
-    public ResponseEntity<Object> updateCategory(@PathVariable long rest_id,@PathVariable long id, @RequestBody CategoryEntity updatedCategory) {
-        try {
-            CategoryResource updatedResource = categoryService.updateCategory(rest_id, id, updatedCategory);
+    @PutMapping("/restaurants/{restaurantId}/category/{id}")
+    public ResponseEntity<Object> updateCategory(@PathVariable long restaurantId,@PathVariable long id, @RequestBody CategoryEntity updatedCategory) throws Exception {
+            CategoryResource updatedResource = categoryService.updateCategory(restaurantId, id, updatedCategory);
             return ResponseEntity.ok(Map.of(
                     "message", "Category updated successfully",
                     "status", 200
             ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                    Map.of("message", e.getMessage(), "status", 400)
-            );
-        }
+
     }
 
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
-    @DeleteMapping("/restaurants/{rest_id}/category/{id}")
-    public ResponseEntity<Object> deleteCategory(@PathVariable long rest_id,@PathVariable long id) {
-        try {
-            categoryService.deleteCategory(rest_id,id);
-            return ResponseEntity.ok(Map.of(
-                    "message", "Category deleted successfully",
-                    "status", 200
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                    Map.of("message", e.getMessage(), "status", 400)
-            );
-        }
+    @DeleteMapping("/restaurants/{restaurantId}/category/{id}")
+    public ResponseEntity<Object> deleteCategory(@PathVariable long restaurantId,@PathVariable long id) throws Exception {
+        categoryService.deleteCategory(restaurantId, id);
+        return ResponseEntity.ok(Map.of(
+                "message", "Category deleted successfully",
+                "status", 200
+        ));
     }
+
 }
