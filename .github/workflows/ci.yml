@@ -5,12 +5,14 @@ on:
     types: [ created ]
 #  push:
 #    branches:
-#      - category-test
+#      - workflow-building
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: read
+      packages: write
     services:
       postgres:
         image: postgres:latest
@@ -49,3 +51,4 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+
