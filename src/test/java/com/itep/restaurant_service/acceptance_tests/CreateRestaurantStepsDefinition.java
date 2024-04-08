@@ -1,156 +1,85 @@
-//package com.itep.restaurant_service.acceptance_tests;
-//
-//import io.cucumber.java.DataTableType;
-//import io.cucumber.java.en.Then;
-//import io.cucumber.java.en.When;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.web.client.RestTemplateBuilder;
-//import org.springframework.core.ParameterizedTypeReference;
-//import org.springframework.http.RequestEntity;
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.web.client.RestTemplate;
-//
-//import java.util.List;
-//import java.util.Map;
-//import java.util.function.Predicate;
-//
-//import static org.assertj.core.api.Assertions.assertThat;
-//
-//public class CreateRestaurantStepsDefinition {
-//    private static final ParameterizedTypeReference<Object> RESPONSE_TYPE = new ParameterizedTypeReference<>() {
-//    };
-//    private RestTemplate restTemplate;
-//    @Autowired
-//    public CreateRestaurantStepsDefinition(RestTemplateBuilder builder) {
-//        restTemplate = builder.build();
-//    }
-//    private ResponseEntity<Object> result;
-//
-//    @When("admin add new restaurant")
-//    public void getAvailableRestaurantsWithoutFilters() {
-//        String uri = "http://localhost:8080/restaurants";
-//        RequestEntity<Void> request = RequestEntity.post(uri).build();
-//        result = restTemplate.exchange(request, RESPONSE_TYPE);;
-//    }
-//
-//
-//    @Then("List all available restaurants is returned")
-//    public void getAvailableRestaurantsWithoutFilters_CheckResponse() {
-//        Object body = result.getBody();
-//        assertThat(body).isNotNull();
-//        assertThat(body)
-//                .isInstanceOf(List.class);
-//        if (!((List<?>)body).isEmpty()) {
-//            assertThat(body)
-//                    .asList()
-//                    .singleElement()
-//                    .hasFieldOrProperty("name")
-//                    .hasFieldOrProperty("address")
-//                    .hasFieldOrProperty("location")
-//                    .hasFieldOrProperty("status")
-//                    .hasFieldOrProperty("food")
-//                    .hasFieldOrProperty("cuisine")
-//                    .extracting("status")
-//                    .matches(Predicate.isEqual("online"));
-//
-//        }
-//    }
-//    @When("I query available restaurants with food type {word} and cuisine type {word}")
-//    public void getAvailableRestaurantsWithFilters(String food, String cuisine) {
-//        String uri = "http://localhost:8080/restaurants?food=%s&cuisine=%s".formatted(food,cuisine);
-//        RequestEntity<Void> request = RequestEntity.get(uri).build();
-//        result = restTemplate.exchange(request, RESPONSE_TYPE);;
-//    }
-//
-//
-//    @Then("List all available restaurants is given with food type {word} and cuisine type {word} are returned")
-//    public void getAvailableRestaurantsWithFilters_CheckResponse(String  food, String  cuisine) {
-//        Object body = result.getBody();
-//        assertThat(body).isNotNull();
-//        assertThat(body)
-//                .isInstanceOf(List.class);
-//        if (!((List<?>)body).isEmpty()) {
-//            assertThat(body)
-//                    .asList()
-//                    .singleElement()
-//                    .hasFieldOrProperty("name")
-//                    .hasFieldOrProperty("address")
-//                    .hasFieldOrProperty("location")
-//                    .hasFieldOrProperty("status")
-//                    .hasFieldOrProperty("food")
-//                    .hasFieldOrProperty("cuisine")
-//                    .extracting("status", "food", "cuisine")
-//                    .containsExactly("online", food, cuisine);
-//        }
-//    }
-//    @When("I query available restaurants with food type {word}")
-//    public void getAvailableRestaurantsWithOnlyFoodFilter(String food) {
-//        String uri = "http://localhost:8080/restaurants?food=%s".formatted(food);
-//        RequestEntity<Void> request = RequestEntity.get(uri).build();
-//        result = restTemplate.exchange(request, RESPONSE_TYPE);;
-//    }
-//
-//
-//    @Then("List all available restaurants is given with food type {word} are returned")
-//    public void getAvailableRestaurantsWithOnlyFoodFilter_CheckResponse(String  food) {
-//        Object body = result.getBody();
-//        assertThat(body).isNotNull();
-//        assertThat(body)
-//                .isInstanceOf(List.class);
-//        if (!((List<?>)body).isEmpty()) {
-//            assertThat(body)
-//                    .asList()
-//                    .singleElement()
-//                    .hasFieldOrProperty("name")
-//                    .hasFieldOrProperty("address")
-//                    .hasFieldOrProperty("location")
-//                    .hasFieldOrProperty("status")
-//                    .hasFieldOrProperty("food")
-//                    .hasFieldOrProperty("cuisine")
-//                    .extracting("status", "food")
-//                    .containsExactly("online", food);
-//        }
-//    }
-//    @When("I query available restaurants with cuisine type {word}")
-//    public void getAvailableRestaurantsWithOnlyCuisineFilter(String cuisine) {
-//        String uri = "http://localhost:8080/restaurants?cuisine=%s".formatted(cuisine);
-//        RequestEntity<Void> request = RequestEntity.get(uri).build();
-//        result = restTemplate.exchange(request, RESPONSE_TYPE);;
-//    }
-//
-//
-//    @Then("List all available restaurants is given with cuisine type {word} are returned")
-//    public void getAvailableRestaurantsWithOnlyCuisineFilter_CheckResponse(String  cuisine) {
-//        Object body = result.getBody();
-//        assertThat(body).isNotNull();
-//        assertThat(body)
-//                .isInstanceOf(List.class);
-//        if (!((List<?>)body).isEmpty()) {
-//            assertThat(body)
-//                    .asList()
-//                    .singleElement()
-//                    .hasFieldOrProperty("name")
-//                    .hasFieldOrProperty("address")
-//                    .hasFieldOrProperty("location")
-//                    .hasFieldOrProperty("status")
-//                    .hasFieldOrProperty("food")
-//                    .hasFieldOrProperty("cuisine")
-//                    .extracting("status", "cuisine")
-//                    .containsExactly("online", cuisine);
-//        }
-//    }
-//    @DataTableType
-//    @SuppressWarnings("unused")
-//    public RestaurantTestEntry convert(Map<String, String> tableRow) {
-//        return new RestaurantTestEntry(
-//                tableRow.get("name"),
-//                tableRow.get("address"),
-//                tableRow.get("location"),
-//                tableRow.get("status"),
-//                tableRow.get("food"),
-//                tableRow.get("cuisine")
-//        );
-//    }
-//    public record RestaurantTestEntry(String name, String address, String location, String status, String food, String cuisine) {
-//    }
-//}
+package com.itep.restaurant_service.acceptance_tests;
+
+import io.cucumber.java.DataTableType;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.*;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.Base64;
+import java.util.Map;
+import java.util.function.Predicate;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+public class CreateRestaurantStepsDefinition {
+    private static final ParameterizedTypeReference<Object> RESPONSE_TYPE = new ParameterizedTypeReference<>() {};
+    private final RestTemplate restTemplate;
+    @Autowired
+    public CreateRestaurantStepsDefinition(RestTemplateBuilder builder) {
+        restTemplate = builder.build();
+    }
+    private ResponseEntity<Object> result;
+
+    @When("new restaurant is added by {word} user with password {word} with restaurant details <restaurantDetails>:")
+    public void adminCreateNewRestaurant(String user, String password, RestaurantEntry restaurantDetails) {
+        String uri = "http://localhost:8080/restaurants";
+        HttpHeaders headers = new HttpHeaders();
+        String encoding = Base64.getEncoder().encodeToString((user + ":" + password).getBytes());
+        headers.set(HttpHeaders.AUTHORIZATION, "Basic " + encoding);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<RestaurantEntry> requestEntity = new HttpEntity<>(restaurantDetails, headers);
+        try {
+            result = restTemplate.postForEntity(uri, requestEntity, Object.class, RESPONSE_TYPE);;
+        }catch (HttpClientErrorException e){
+            if (e.getStatusCode().value()==401) {
+                result = ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            } else if (e.getStatusCode().value()==400) {
+                result = ResponseEntity.badRequest().body(e.getResponseBodyAs(Map.class));
+            }else {
+                throw e;
+            }
+        }
+    }
+
+
+    @Then("restaurant created successfully")
+    public void restaurantCreatedSuccessfully_CheckResponse() {
+        Object body = result.getBody();
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(body)
+                .hasFieldOrProperty("message")
+                .extracting("message")
+                .matches(Predicate.isEqual("Restaurant created successfully"));
+    }
+    @Then("restaurant can not be created duo to missing values")
+    public void missingRestaurantFields_CheckResponse() {
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(result.getBody()).isNotNull();
+        assertThat(((Map<String, Object>)result.getBody()).get("message")).isNotNull().isEqualTo("You must provide all the restaurant fields");
+    }
+    @Then("not authorized to add restaurant")
+    public void notAuthorizedToAddRestaurant_CheckResponse() {
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+    @DataTableType
+    @SuppressWarnings("unused")
+    public RestaurantEntry convert(Map<String, String> tableRow) {
+        return new RestaurantEntry(
+                tableRow.get("name"),
+                tableRow.get("address"),
+                tableRow.get("location"),
+                tableRow.get("status"),
+                tableRow.get("food"),
+                tableRow.get("cuisine"),
+                new OwnerEntry(tableRow.get("owner.username"), tableRow.get("owner.password"))
+        );
+    }
+    public record RestaurantEntry(String name, String address, String location, String status, String food, String cuisine, OwnerEntry owner) {
+    }
+    public record OwnerEntry(String username, String password){}
+}

@@ -144,18 +144,4 @@ public class ListRestaurantsStepsDefinition {
                     .containsExactly("online", cuisine);
         }
     }
-    @DataTableType
-    @SuppressWarnings("unused")
-    public RestaurantTestEntry convert(Map<String, String> tableRow) {
-        return new RestaurantTestEntry(
-                tableRow.get("name"),
-                tableRow.get("address"),
-                tableRow.get("location"),
-                tableRow.get("status"),
-                tableRow.get("food"),
-                tableRow.get("cuisine")
-        );
-    }
-    public record RestaurantTestEntry(String name, String address, String location, String status, String food, String cuisine) {
-    }
 }
