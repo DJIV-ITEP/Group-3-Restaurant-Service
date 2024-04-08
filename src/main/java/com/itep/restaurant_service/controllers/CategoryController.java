@@ -19,7 +19,7 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
     @GetMapping("/restaurants/{restaurantId}/category")
-    public ResponseEntity<Object> getCategory(@PathVariable long restaurantId){
+    public ResponseEntity<Object> getCategory(@PathVariable long restaurantId) throws Exception {
 
         List<CategoryResource> result = categoryService.getCategory(restaurantId);
         if(!result.isEmpty()){
@@ -35,7 +35,7 @@ public class CategoryController {
     }
 
     @GetMapping("/restaurants/{restaurantId}/category/{categoryId}")
-    public ResponseEntity<Object> getCategory(@PathVariable long restaurantId,@PathVariable long categoryId){
+    public ResponseEntity<Object> getCategory(@PathVariable long restaurantId,@PathVariable long categoryId) throws Exception {
         var categoryResource = categoryService.getCategoryDetails(restaurantId,categoryId);
         return categoryResource.<ResponseEntity<Object>>map(
                         resource -> new ResponseEntity<>(
