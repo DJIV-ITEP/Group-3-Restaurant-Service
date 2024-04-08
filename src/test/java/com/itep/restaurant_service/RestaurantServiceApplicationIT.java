@@ -11,11 +11,11 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ActiveProfiles("dev")
 class RestaurantServiceApplicationIT {
 
-//	@Test
-//	void contextLoads() {
-//		/*
-//		 * A basic empty test that validates the spring context is initialized without errors ie application can start
-//		 */
-//	}
+	@Test
+	void contextLoads() {
+		/*
+		 * A basic empty test that validates the spring context is initialized without errors ie application can start
+		 */
+	}
 
 }
