@@ -1,6 +1,12 @@
 package com.itep.restaurant_service.acceptance_tests;
 
+import com.itep.restaurant_service.repositories.RestaurantRepository;
+import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
+import com.itep.restaurant_service.repositories.entities.UserEntity;
+import io.cucumber.datatable.DataTable;
+import io.cucumber.java.Before;
 import io.cucumber.java.DataTableType;
+import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +16,7 @@ import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -24,12 +31,27 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 public class ListRestaurantsStepsDefinition {
     private static final ParameterizedTypeReference<Object> RESPONSE_TYPE = new ParameterizedTypeReference<>() {
     };
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate;
+    private final RestaurantRepository restaurantRepository;
     @Autowired
-    public ListRestaurantsStepsDefinition(RestTemplateBuilder builder) {
+    public ListRestaurantsStepsDefinition(RestTemplateBuilder builder, RestaurantRepository restaurantRepository) {
         restTemplate = builder.build();
+        this.restaurantRepository = restaurantRepository;
     }
     private ResponseEntity<Object> result;
+    @Given("Available restaurants in database to test list available restaurants")
+    public void haveBooksInTheStore(DataTable table) {
+        List<List<Object>> rows = table.asLists(Object.class);
+        for (List<Object> columns: rows) {
+            // pass header
+            if (rows.get(0) == columns) continue;
+            restaurantRepository.save(new RestaurantEntity(Integer.parseInt(columns.get(0).toString()), columns.get(1).toString(), columns.get(2).toString(),
+                    columns.get(3).toString(), columns.get(4).toString(), columns.get(5).toString(),
+                    columns.get(6).toString(), new UserEntity(columns.get(7).toString(), columns.get(8).toString()),
+                    new ArrayList<>()));
+        }
+    }
+
 
     @When("I query available restaurants without filters")
     public void getAvailableRestaurantsWithoutFilters() {
@@ -39,8 +61,8 @@ public class ListRestaurantsStepsDefinition {
     }
 
 
-    @Then("List all available restaurants is returned")
-    public void getAvailableRestaurantsWithoutFilters_CheckResponse() {
+    @Then("List all the {int} available restaurants is returned")
+    public void getAvailableRestaurantsWithoutFilters_CheckResponse(int size) {
         Object body = result.getBody();
         assertThat(body).isNotNull();
         assertThat(body)
@@ -48,7 +70,8 @@ public class ListRestaurantsStepsDefinition {
         if (!((List<?>)body).isEmpty()) {
             assertThat(body)
                     .asList()
-                    .singleElement()
+                    .hasSize(size)
+                    .element(0)
                     .hasFieldOrProperty("name")
                     .hasFieldOrProperty("address")
                     .hasFieldOrProperty("location")
@@ -67,9 +90,8 @@ public class ListRestaurantsStepsDefinition {
         result = restTemplate.exchange(request, RESPONSE_TYPE);;
     }
 
-
-    @Then("List all available restaurants is given with food type {word} and cuisine type {word} are returned")
-    public void getAvailableRestaurantsWithFilters_CheckResponse(String  food, String  cuisine) {
+    @Then("List all the {int} available restaurants is given with food type {word} and cuisine type {word} are returned")
+    public void getAvailableRestaurantsWithFilters_CheckResponse(int size, String  food, String  cuisine) {
         Object body = result.getBody();
         assertThat(body).isNotNull();
         assertThat(body)
@@ -77,6 +99,7 @@ public class ListRestaurantsStepsDefinition {
         if (!((List<?>)body).isEmpty()) {
             assertThat(body)
                     .asList()
+                    .hasSize(size)
                     .singleElement()
                     .hasFieldOrProperty("name")
                     .hasFieldOrProperty("address")
@@ -96,8 +119,8 @@ public class ListRestaurantsStepsDefinition {
     }
 
 
-    @Then("List all available restaurants is given with food type {word} are returned")
-    public void getAvailableRestaurantsWithOnlyFoodFilter_CheckResponse(String  food) {
+    @Then("List all the {int} available restaurants is given with food type {word} are returned")
+    public void getAvailableRestaurantsWithOnlyFoodFilter_CheckResponse(int size, String  food) {
         Object body = result.getBody();
         assertThat(body).isNotNull();
         assertThat(body)
@@ -105,7 +128,8 @@ public class ListRestaurantsStepsDefinition {
         if (!((List<?>)body).isEmpty()) {
             assertThat(body)
                     .asList()
-                    .singleElement()
+                    .hasSize(size)
+                    .element(0)
                     .hasFieldOrProperty("name")
                     .hasFieldOrProperty("address")
                     .hasFieldOrProperty("location")
@@ -124,8 +148,8 @@ public class ListRestaurantsStepsDefinition {
     }
 
 
-    @Then("List all available restaurants is given with cuisine type {word} are returned")
-    public void getAvailableRestaurantsWithOnlyCuisineFilter_CheckResponse(String  cuisine) {
+    @Then("List all the {int} available restaurants is given with cuisine type {word} are returned")
+    public void getAvailableRestaurantsWithOnlyCuisineFilter_CheckResponse(int size, String  cuisine) {
         Object body = result.getBody();
         assertThat(body).isNotNull();
         assertThat(body)
@@ -133,7 +157,8 @@ public class ListRestaurantsStepsDefinition {
         if (!((List<?>)body).isEmpty()) {
             assertThat(body)
                     .asList()
-                    .singleElement()
+                    .hasSize(size)
+                    .element(0)
                     .hasFieldOrProperty("name")
                     .hasFieldOrProperty("address")
                     .hasFieldOrProperty("location")
