@@ -3,6 +3,10 @@ package com.itep.restaurant_service.controllers;
 import com.itep.restaurant_service.models.CategoryResource;
 import com.itep.restaurant_service.repositories.entities.CategoryEntity;
 import com.itep.restaurant_service.services.impl.CategoryServiceImpl;
+import com.itep.restaurant_service.services.impl.errorsHandels.CategoryNotFoundException;
+import com.itep.restaurant_service.services.impl.errorsHandels.CategoryNotInRestaurantException;
+import com.itep.restaurant_service.services.impl.errorsHandels.RestaurantNotFoundException;
+import com.itep.restaurant_service.services.impl.errorsHandels.UserNotOwnerOfRestaurantException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,41 +24,66 @@ public class CategoryController {
     }
     @GetMapping("/restaurants/{restaurantId}/category")
     public ResponseEntity<Object> getCategory(@PathVariable long restaurantId) throws Exception {
-
-        List<CategoryResource> result = categoryService.getCategory(restaurantId);
-        if(!result.isEmpty()){
+        try {
+            List<CategoryResource> result = categoryService.getCategory(restaurantId);
             return new ResponseEntity<>(result,HttpStatus.OK);
-        }
-        else {
+        } catch (RestaurantNotFoundException e) {
             return new ResponseEntity<>(
-                    Map.of("message","no Category found for this restaurant", "status",200)
-                    , HttpStatus.OK
+                    Map.of("message",e.getMessage(), "code",404)
+                    , HttpStatus.NOT_FOUND
             );
+
         }
+
 
     }
 
     @GetMapping("/restaurants/{restaurantId}/category/{categoryId}")
     public ResponseEntity<Object> getCategory(@PathVariable long restaurantId,@PathVariable long categoryId) throws Exception {
-        var categoryResource = categoryService.getCategoryDetails(restaurantId,categoryId);
-        return categoryResource.<ResponseEntity<Object>>map(
-                        resource -> new ResponseEntity<>(
-                                resource, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(
-                        Map.of("message", "Category not found",
-                                "status", 404)
-                        , HttpStatus.NOT_FOUND));
+        try{
+            CategoryResource categoryResource = categoryService.getCategoryDetails(restaurantId,categoryId);
+            return new ResponseEntity<>(categoryResource,HttpStatus.OK);
+        }
+        catch (RestaurantNotFoundException | CategoryNotFoundException | CategoryNotInRestaurantException e){
+            return new ResponseEntity<>(
+                    Map.of("message",e.getMessage(), "code",404)
+                    , HttpStatus.NOT_FOUND
+            );
+        }
+
 
     }
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @PostMapping("/restaurants/{restaurantId}/category")
     public ResponseEntity<Object> createCategory(@PathVariable long restaurantId , @RequestBody CategoryEntity addCategory) throws Exception {
-
-        CategoryResource addResource = categoryService.createCategory(restaurantId,addCategory);
+        try{
+            CategoryResource addResource = categoryService.createCategory(restaurantId,addCategory);
             return ResponseEntity.ok(Map.of(
                     "message","Category created successfully",
                     "status",200
             ));
+        }
+        catch (RestaurantNotFoundException  e){
+            return new ResponseEntity<>(
+                    Map.of("message",e.getMessage(), "code",404)
+                    , HttpStatus.NOT_FOUND
+            );
+
+        }
+        catch (UserNotOwnerOfRestaurantException  e1){
+            return new ResponseEntity<>(
+                    Map.of("message",e1.getMessage(), "code",403)
+                    , HttpStatus.FORBIDDEN
+            );
+
+        }
+        catch (Exception ex){
+            return new ResponseEntity<>(
+                    Map.of("message",ex.getMessage(), "code",400)
+                    , HttpStatus.BAD_REQUEST
+            );
+        }
+
 
 
 
@@ -62,22 +91,67 @@ public class CategoryController {
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @PutMapping("/restaurants/{restaurantId}/category/{id}")
     public ResponseEntity<Object> updateCategory(@PathVariable long restaurantId,@PathVariable long id, @RequestBody CategoryEntity updatedCategory) throws Exception {
+        try{
             CategoryResource updatedResource = categoryService.updateCategory(restaurantId, id, updatedCategory);
             return ResponseEntity.ok(Map.of(
                     "message", "Category updated successfully",
                     "status", 200
             ));
+        }
+        catch (RestaurantNotFoundException | CategoryNotFoundException e){
+            return new ResponseEntity<>(
+                    Map.of("message",e.getMessage(), "code",404)
+                    , HttpStatus.NOT_FOUND
+            );
+
+        }
+        catch (UserNotOwnerOfRestaurantException  e1){
+            return new ResponseEntity<>(
+                    Map.of("message",e1.getMessage(), "code",403)
+                    , HttpStatus.FORBIDDEN
+            );
+
+        }
+        catch (Exception ex){
+            return new ResponseEntity<>(
+                    Map.of("message",ex.getMessage(), "code",400)
+                    , HttpStatus.BAD_REQUEST
+            );
+        }
+
 
     }
 
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @DeleteMapping("/restaurants/{restaurantId}/category/{id}")
     public ResponseEntity<Object> deleteCategory(@PathVariable long restaurantId,@PathVariable long id) throws Exception {
-        categoryService.deleteCategory(restaurantId, id);
-        return ResponseEntity.ok(Map.of(
-                "message", "Category deleted successfully",
-                "status", 200
-        ));
+        try{
+            categoryService.deleteCategory(restaurantId, id);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Category deleted successfully",
+                    "status", 200
+            ));
+        }
+        catch (RestaurantNotFoundException | CategoryNotFoundException e){
+            return new ResponseEntity<>(
+                    Map.of("message",e.getMessage(), "code",404)
+                    , HttpStatus.NOT_FOUND
+            );
+
+        }
+        catch (UserNotOwnerOfRestaurantException  e1){
+            return new ResponseEntity<>(
+                    Map.of("message",e1.getMessage(), "code",403)
+                    , HttpStatus.FORBIDDEN
+            );
+
+        }
+        catch (Exception ex){
+            return new ResponseEntity<>(
+                    Map.of("message",ex.getMessage(), "code",400)
+                    , HttpStatus.BAD_REQUEST
+            );
+        }
     }
 
 }

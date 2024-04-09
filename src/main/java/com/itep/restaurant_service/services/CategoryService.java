@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface CategoryService {
     List<CategoryResource> getCategory(long rest_id) throws Exception;
-    Optional<CategoryResource>  getCategoryDetails(long restaurantId, long categoryId ) throws Exception;
+    CategoryResource  getCategoryDetails(long restaurantId, long categoryId ) throws Exception;
     CategoryResource createCategory(long restaurantId ,CategoryEntity body) throws Exception;
 
     CategoryResource updateCategory(long restaurantId ,long id, CategoryEntity body) throws Exception;

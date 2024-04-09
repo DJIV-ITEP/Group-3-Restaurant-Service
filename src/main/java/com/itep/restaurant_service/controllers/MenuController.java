@@ -3,6 +3,7 @@ package com.itep.restaurant_service.controllers;
 import com.itep.restaurant_service.models.MenuResource;
 import com.itep.restaurant_service.repositories.entities.MenuEntity;
 import com.itep.restaurant_service.services.impl.MenuServiceImpl;
+import com.itep.restaurant_service.services.impl.errorsHandels.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,27 +22,42 @@ public class MenuController {
 
     @GetMapping("/restaurants/{rest_id}/category/{cat_id}/menus")
     public ResponseEntity<Object> getMenus(@PathVariable long rest_id, @PathVariable long cat_id) throws Exception {
-
-        List<MenuResource> result = menuService.getMenues(rest_id, cat_id);
-        if(!result.isEmpty()) {
+        try{
+            List<MenuResource> result = menuService.getMenues(rest_id, cat_id);
             return new ResponseEntity<>(result, HttpStatus.OK);
         }
-        else{
-            return new ResponseEntity<>( Map.of("message","no menu found for this category", "status",200)
-                    , HttpStatus.OK);
+        catch (RestaurantNotFoundException | CategoryNotFoundException e){
+            return new ResponseEntity<>( Map.of("message",e.getMessage(), "status",404)
+                    , HttpStatus.NOT_FOUND);
         }
+        catch (CategoryNotInRestaurantException ee){
+            return new ResponseEntity<>( Map.of("message",ee.getMessage(), "status",400)
+                    , HttpStatus.BAD_REQUEST);
+        }
+
+
     }
 
     @GetMapping("/restaurants/{rest_id}/category/{cat_id}/menus/{menu_id}")
     public ResponseEntity<Object> getMenuDetails(@PathVariable long rest_id, @PathVariable long cat_id, @PathVariable long menu_id) throws Exception {
-        var menuResource = menuService.getMenueDetails(rest_id,cat_id,menu_id);
-        return menuResource.<ResponseEntity<Object>>map(
-                        resource -> new ResponseEntity<>(
-                                resource, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(
-                        Map.of("message", "Menu not found",
-                                "status", 404)
-                        , HttpStatus.NOT_FOUND));
+        try{
+            MenuResource menuResource = menuService.getMenueDetails(rest_id,cat_id,menu_id);
+            return new ResponseEntity<>(menuResource,HttpStatus.OK);
+        }
+        catch (RestaurantNotFoundException | CategoryNotFoundException | MenuNotFoundException e){
+            return new ResponseEntity<>(
+                    Map.of("message", e.getMessage(),
+                            "status", 404)
+                    , HttpStatus.NOT_FOUND);
+        }
+
+        catch (CategoryNotInRestaurantException | MenuNotInCategoryException ee ){
+            return new ResponseEntity<>(
+                    Map.of("message", ee.getMessage(),
+                            "status", 400)
+                    , HttpStatus.BAD_REQUEST);
+        }
+
 
     }
 

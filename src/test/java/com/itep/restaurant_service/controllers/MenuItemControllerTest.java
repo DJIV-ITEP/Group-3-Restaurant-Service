@@ -80,7 +80,7 @@ public class MenuItemControllerTest {
         RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("owner", "owner"), null);
         CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
         MenuEntity menu = new MenuEntity(1,"menu 1",category,null);
-        ItemEntity item = new ItemEntity(1, "item 1", "description",1200, menu);
+        ItemEntity item = new ItemEntity(1, "item 1", "description",1200,500, menu);
         List<ItemResource> result = new ArrayList<>();
         result.add(item.toItemResource());
         when(menuItemService.getItems(1,1,1))
@@ -89,13 +89,14 @@ public class MenuItemControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/restaurants/1/category/1/menus/1/item"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$",hasSize(1)))
-                .andExpect(jsonPath("$[0].*",hasSize(5)))
+                .andExpect(jsonPath("$[0].*",hasSize(6)))
 
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].id", equalTo(((int) result.get(0).getId()))))
                 .andExpect(jsonPath("$[0].name", equalTo(result.get(0).getName())))
                 .andExpect(jsonPath("$[0].description", equalTo(result.get(0).getDescription())))
                 .andExpect(jsonPath("$[0].price", equalTo((double) result.get(0).getPrice())))
+                .andExpect(jsonPath("$[0].quantity", equalTo((double) result.get(0).getQuantity())))
                 .andExpect(jsonPath("$[0].menu", equalTo((int)result.get(0).getMenu())))
 
                 ;
@@ -119,24 +120,30 @@ public class MenuItemControllerTest {
     @Test
     @WithMockUser()
     void testGetItemDetail_Found() throws Exception {
-        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
-        CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
-        MenuEntity menu = new MenuEntity(1,"menu 1",category,null);
-        ItemEntity item = new ItemEntity(1, "item 1", "description",1200, menu);
-        Optional<ItemResource> result = Optional.of(new ItemResource(1, "item 1",1200,"description", menu.getId()));
+        Optional<ItemResource> result = getItemResource();
         when(menuItemService.getItemsDetails(1,1,1,1))
                 .thenReturn(result);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/restaurants/1/category/1/menus/1/item/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.*", hasSize(5)))
+                .andExpect(jsonPath("$.*", hasSize(6)))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", equalTo(((int) result.get().getId()))))
                 .andExpect(jsonPath("$.name", equalTo(result.get().getName())))
                 .andExpect(jsonPath("$.description", equalTo(result.get().getDescription())))
+                .andExpect(jsonPath("$.quantity", equalTo((double) result.get().getQuantity())))
                 .andExpect(jsonPath("$.price", equalTo((double) result.get().getPrice())))
                 .andExpect(jsonPath("$.menu", equalTo((int)result.get().getMenu())))
         ;
+    }
+
+    private static Optional<ItemResource> getItemResource() {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
+        MenuEntity menu = new MenuEntity(1,"menu 1",category,null);
+        ItemEntity item = new ItemEntity(1, "item 1", "description",1200,500, menu);
+        Optional<ItemResource> result = Optional.of(new ItemResource(1, "item 1",1200,500,"description", menu.getId()));
+        return result;
     }
 
     @Test
@@ -145,7 +152,7 @@ public class MenuItemControllerTest {
         RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
         CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
         MenuEntity menu = new MenuEntity(1L,"menu 1",category,null);
-        ItemEntity item = new ItemEntity(1, "item 1", "description",1200, menu);
+        ItemEntity item = new ItemEntity(1, "item 1", "description",1200,500, menu);
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
         ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
@@ -162,7 +169,7 @@ public class MenuItemControllerTest {
         RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
         CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
         MenuEntity menu = new MenuEntity(1L,"menu 1",category,null);
-        ItemEntity item = new ItemEntity(1, "item 1", "description",1200, menu);
+        ItemEntity item = new ItemEntity(1, "item 1", "description",1200,500, menu);
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
         ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
@@ -180,7 +187,7 @@ public class MenuItemControllerTest {
         RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
         CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
         MenuEntity menu = new MenuEntity(1L,"menu 1",category,null);
-        ItemEntity item = new ItemEntity(1, "item 1", "description",1200, menu);
+        ItemEntity item = new ItemEntity(1, "item 1", "description",1200,500, menu);
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
         ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
@@ -197,7 +204,7 @@ public class MenuItemControllerTest {
         RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
         CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
         MenuEntity menu = new MenuEntity(1L,"menu 1",category,null);
-        ItemEntity item = new ItemEntity(1, "item 1", "description",1200, menu);
+        ItemEntity item = new ItemEntity(1, "item 1", "description",1200,500, menu);
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
         ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
@@ -213,7 +220,7 @@ public class MenuItemControllerTest {
         RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
         CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
         MenuEntity menu = new MenuEntity(1L,"menu 1",category,null);
-        ItemEntity item = new ItemEntity(1, "item 1", "description",1200, menu);
+        ItemEntity item = new ItemEntity(1, "item 1", "description",1200,500, menu);
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
         ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
@@ -229,7 +236,7 @@ public class MenuItemControllerTest {
         RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
         CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
         MenuEntity menu = new MenuEntity(1L,"menu 1",category,null);
-        ItemEntity item = new ItemEntity(1, "item 1", "description",1200, menu);
+        ItemEntity item = new ItemEntity(1, "item 1", "description",1200,500, menu);
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
         ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
