@@ -150,6 +150,7 @@ public class MenuItemServiceImpl implements MenuItemService {
                             itemEntity.setName(body.getName());
                             itemEntity.setDescription(body.getDescription());
                             itemEntity.setPrice(body.getPrice());
+                            itemEntity.setQuantity(body.getQuantity());
                             return menuItemRepository.save(itemEntity).toItemResource();
                         }
                         catch (Exception e) {

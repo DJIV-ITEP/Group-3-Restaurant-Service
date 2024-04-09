@@ -8,6 +8,10 @@ import com.itep.restaurant_service.repositories.entities.CategoryEntity;
 import com.itep.restaurant_service.repositories.entities.MenuEntity;
 import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
 import com.itep.restaurant_service.services.CategoryService;
+import com.itep.restaurant_service.services.impl.errorsHandels.CategoryNotFoundException;
+import com.itep.restaurant_service.services.impl.errorsHandels.CategoryNotInRestaurantException;
+import com.itep.restaurant_service.services.impl.errorsHandels.RestaurantNotFoundException;
+import com.itep.restaurant_service.services.impl.errorsHandels.UserNotOwnerOfRestaurantException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -31,32 +35,31 @@ public class CategoryServiceImpl implements CategoryService {
     private RestaurantRepository restaurantRepository;
     @Override
     public List<CategoryResource> getCategory(long restaurantId) throws Exception {
-        Optional<RestaurantEntity> yourEntityOptional = restaurantRepository.findById(restaurantId);
-        if (yourEntityOptional.isPresent()) {
-            return categoryRepository.findByRestaurantId(restaurantId).stream()
-                    .map(CategoryEntity::toCategoryResource)
-                    .collect(Collectors.toList());
-        }
-        else{
-            throw new Exception("Restaurant with id " + restaurantId + " not found");
-        }
+        RestaurantEntity restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new RestaurantNotFoundException(restaurantId));
+        return categoryRepository.findByRestaurantId(restaurantId).stream()
+                .map(CategoryEntity::toCategoryResource)
+                .collect(Collectors.toList());
+
 
     }
 
     @Override
-    public Optional<CategoryResource> getCategoryDetails(long restaurantId, long categoryId) throws Exception {
-        Optional<CategoryEntity> categoryEntity = categoryRepository.findById(categoryId);
-        if(categoryEntity.isPresent()){
-            if(RestaurantUtils.isCategoryInRestaurant(categoryEntity.get(),restaurantId)){
-                return categoryEntity.map(CategoryEntity::toCategoryResource);
-            }
-            else{
-                throw new Exception("Category with id " + categoryId + " not in Restaurant");
-            }
+    public CategoryResource getCategoryDetails(long restaurantId, long categoryId) throws Exception {
+        RestaurantEntity restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new RestaurantNotFoundException(restaurantId));
+
+        CategoryEntity categoryEntity = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new CategoryNotInRestaurantException(categoryId));
+
+        if(RestaurantUtils.isCategoryInRestaurant(categoryEntity,restaurantId)){
+            return categoryEntity.toCategoryResource();
         }
         else{
-            throw new Exception("Category with id " + categoryId + " not found");
+            throw new CategoryNotInRestaurantException(categoryId );
         }
+
+
 
 
 
@@ -66,7 +69,7 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryResource createCategory(long restaurantId, CategoryEntity body) throws Exception {
 
         RestaurantEntity restaurantEntity = restaurantRepository.findById(restaurantId)
-                .orElseThrow(() -> new Exception("Restaurant not found"));
+                .orElseThrow(() -> new RestaurantNotFoundException(restaurantId));
 
         if(RestaurantUtils.isRestaurantOwner(restaurantEntity,SecurityContextHolder.getContext().getAuthentication().getName())){
             try{
@@ -81,11 +84,11 @@ public class CategoryServiceImpl implements CategoryService {
                 else if (e.getMessage().contains("not-null property references a null")) {
                     throw new Exception("You must provide all the category fields");
                 }
-                throw new Exception("unknown error");
+                throw new Exception(e.getMessage());
             }
         }
         else{
-            throw new Exception("you are not the owner of Restaurant "+restaurantEntity.getName());
+            throw new UserNotOwnerOfRestaurantException();
         }
 
 
@@ -94,9 +97,13 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryResource updateCategory(long restaurantId,long id, CategoryEntity body) throws Exception {
 
+        RestaurantEntity restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new RestaurantNotFoundException(restaurantId));
 
         CategoryEntity categoryEntity = categoryRepository.findById(id)
-                .orElseThrow(() -> new Exception("category not found"));
+                .orElseThrow(() -> new CategoryNotInRestaurantException(id));
+
+
 
         if(RestaurantUtils.isCategoryInRestaurant(categoryEntity,restaurantId)){
             if(RestaurantUtils.isRestaurantOwner(categoryEntity.getRestaurant(),SecurityContextHolder.getContext().getAuthentication().getName())){
@@ -113,11 +120,11 @@ public class CategoryServiceImpl implements CategoryService {
                 }
             }
             else{
-                throw new Exception("you are not the owner of Restaurant");
+                throw new UserNotOwnerOfRestaurantException();
             }
         }
         else{
-            throw new Exception("Category not belong to Restaurant");
+            throw new CategoryNotInRestaurantException(id);
         }
 
 
@@ -127,8 +134,13 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void deleteCategory(long restaurantId,long id) throws Exception {
+        RestaurantEntity restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new RestaurantNotFoundException(restaurantId));
+
         CategoryEntity categoryEntity = categoryRepository.findById(id)
-                .orElseThrow(() -> new Exception("category not found"));
+                .orElseThrow(() -> new CategoryNotInRestaurantException(id));
+
+
 
         if(RestaurantUtils.isCategoryInRestaurant(categoryEntity,restaurantId)){
             if(RestaurantUtils.isRestaurantOwner(categoryEntity.getRestaurant(),SecurityContextHolder.getContext().getAuthentication().getName())){
@@ -142,11 +154,11 @@ public class CategoryServiceImpl implements CategoryService {
 
             }
             else{
-                throw new Exception("you are not the owner of Restaurant");
+                throw new UserNotOwnerOfRestaurantException();
             }
         }
         else{
-            throw new Exception("Category not belong to Restaurant");
+            throw new CategoryNotInRestaurantException(id);
         }
 
 

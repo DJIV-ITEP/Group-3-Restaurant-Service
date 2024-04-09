@@ -17,13 +17,14 @@ public class ItemEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     private String name;
     @Column(name = "description")
     private String description;
-    @Column(name = "price")
+    @Column(name = "price", nullable = false)
     private double price;
-
+    @Column(name = "quantity", nullable = false)
+    private double quantity;
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name = "menu_id", nullable = false)
     private MenuEntity menu;
@@ -36,6 +37,7 @@ public class ItemEntity {
                 .name(name)
                 .price(price)
                 .description(description)
+                .quantity(quantity)
                 .menu(menu.getId())
                 .build();
     }

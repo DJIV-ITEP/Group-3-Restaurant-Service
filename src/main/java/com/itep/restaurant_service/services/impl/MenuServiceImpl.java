@@ -9,6 +9,10 @@ import com.itep.restaurant_service.repositories.entities.ItemEntity;
 import com.itep.restaurant_service.repositories.entities.MenuEntity;
 import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
 import com.itep.restaurant_service.services.MenuService;
+import com.itep.restaurant_service.services.impl.errorsHandels.CategoryNotInRestaurantException;
+import com.itep.restaurant_service.services.impl.errorsHandels.MenuNotFoundException;
+import com.itep.restaurant_service.services.impl.errorsHandels.MenuNotInCategoryException;
+import com.itep.restaurant_service.services.impl.errorsHandels.RestaurantNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -37,8 +41,12 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public List<MenuResource> getMenues(long rest_id, long cat_id) throws Exception{
+        RestaurantEntity restaurant = restaurantRepository.findById(rest_id)
+                .orElseThrow(() -> new RestaurantNotFoundException(rest_id));
+
         CategoryEntity categoryEntity = categoryRepository.findById(cat_id)
-                .orElseThrow(() -> new Exception("Categoty not found"));
+                .orElseThrow(() -> new CategoryNotInRestaurantException(cat_id));
+
         if(RestaurantUtils.isCategoryInRestaurant(categoryEntity,rest_id)){
             try{
                 return menuRepository.findByCategoryId(cat_id).stream()
@@ -50,32 +58,37 @@ public class MenuServiceImpl implements MenuService {
             }
         }
         else{
-            throw new Exception("Category with id " + cat_id + " not belong to Restaurant");
+            throw new CategoryNotInRestaurantException(cat_id);
         }
 
 
     }
     @Override
-    public Optional<MenuResource> getMenueDetails(long rest_id, long cat_id, long menu_id) throws Exception{
+    public MenuResource getMenueDetails(long rest_id, long cat_id, long menu_id) throws Exception{
+        RestaurantEntity restaurant = restaurantRepository.findById(rest_id)
+                .orElseThrow(() -> new RestaurantNotFoundException(rest_id));
+
+        CategoryEntity categoryEntity = categoryRepository.findById(cat_id)
+                .orElseThrow(() -> new CategoryNotInRestaurantException(cat_id));
         MenuEntity menuEntity = menuRepository.findById(menu_id)
-                .orElseThrow(() -> new Exception("Menu not found"));
+                .orElseThrow(() -> new MenuNotFoundException(menu_id));
 
         if(RestaurantUtils.isMenuInCategory(menuEntity,cat_id)){
             if(RestaurantUtils.isCategoryInRestaurant(menuEntity.getCategory(), rest_id)){
                 try{
-                    Optional<MenuEntity> yourEntityOptional = menuRepository.findById(menu_id);
-                    return yourEntityOptional.map(MenuEntity::toMenuResource);
+
+                    return menuEntity.toMenuResource();
                 }
                 catch (Exception e){
                     throw new Exception(e.getMessage());
                 }
             }
             else{
-                throw new Exception("Category with id " + cat_id + " not belong to Restaurant");
+                throw new CategoryNotInRestaurantException(cat_id);
             }
         }
         else{
-            throw new Exception("Menu with id " + menu_id + " not belong to Category");
+            throw new MenuNotInCategoryException(menu_id);
         }
 
 

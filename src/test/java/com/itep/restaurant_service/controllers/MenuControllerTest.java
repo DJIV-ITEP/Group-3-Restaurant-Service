@@ -14,6 +14,7 @@ import com.itep.restaurant_service.repositories.entities.UserEntity;
 import com.itep.restaurant_service.security.WebSecurityConfig;
 import com.itep.restaurant_service.services.impl.MenuServiceImpl;
 import com.itep.restaurant_service.services.impl.RestaurantServiceImpl;
+import com.itep.restaurant_service.services.impl.errorsHandels.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -90,15 +91,100 @@ public class MenuControllerTest {
 
                 ;
     }
+    @Test
+    @WithMockUser()
+    void testGetMenu_NotRestaurantFound() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1L, "name", "address", "location", "status", "food", "cuisine", new UserEntity("owner", "owner"), null);
+        CategoryEntity category = new CategoryEntity(1L,"name", restaurant,null);
+        MenuEntity menu1 = new MenuEntity(1L,"menu 1",category,null);
 
+        List<MenuResource> result = new ArrayList<>();
+        result.add(menu1.toMenuResource());
+        when(menuService.getMenues(0,1))
+                .thenThrow(new RestaurantNotFoundException(0));
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/restaurants/0/category/1/menus"))
+                .andExpect(status().isNotFound())
+
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+    @Test
+    @WithMockUser()
+    void testGetMenu_NotCategoryFound() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1L, "name", "address", "location", "status", "food", "cuisine", new UserEntity("owner", "owner"), null);
+        CategoryEntity category = new CategoryEntity(1L,"name", restaurant,null);
+        MenuEntity menu1 = new MenuEntity(1L,"menu 1",category,null);
+
+        List<MenuResource> result = new ArrayList<>();
+        result.add(menu1.toMenuResource());
+        when(menuService.getMenues(1,0))
+                .thenThrow(new CategoryNotFoundException(0));
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/restaurants/1/category/0/menus"))
+                .andExpect(status().isNotFound())
+
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+    @Test
+    @WithMockUser()
+    void testGetMenu_CategoryNotInRestaurant() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1L, "name", "address", "location", "status", "food", "cuisine", new UserEntity("owner", "owner"), null);
+        CategoryEntity category = new CategoryEntity(1L,"name", restaurant,null);
+        MenuEntity menu1 = new MenuEntity(1L,"menu 1",category,null);
+
+        List<MenuResource> result = new ArrayList<>();
+        result.add(menu1.toMenuResource());
+        when(menuService.getMenues(1,5))
+                .thenThrow(new CategoryNotInRestaurantException(1));
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/restaurants/1/category/5/menus"))
+                .andExpect(status().isBadRequest())
+
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
     @Test
     @WithMockUser()
     void testGetMenuDetail_NotFound() throws Exception {
 
         when(menuService.getMenueDetails(1,1,0))
-                .thenReturn(Optional.empty());
+                .thenThrow(new MenuNotFoundException(0));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/restaurants/1/category/1/menus/0"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+    @Test
+    @WithMockUser()
+    void testGetMenuDetail_NotInCategory() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1L, "name", "address", "location", "status", "food", "cuisine", new UserEntity("owner", "owner"), null);
+        CategoryEntity category = new CategoryEntity(1L,"name", restaurant,null);
+        MenuEntity menu1 = new MenuEntity(1L,"menu 1",null,null);
+        when(menuService.getMenueDetails(1,1,5))
+                .thenThrow(new MenuNotInCategoryException(5));
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/restaurants/1/category/1/menus/5"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+    @Test
+    @WithMockUser()
+    void testGetMenuDetail_NotRestaurentFound() throws Exception {
+
+        when(menuService.getMenueDetails(0,1,1))
+                .thenThrow(new RestaurantNotFoundException(0));
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/restaurants/0/category/1/menus/1"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+    }
+    @Test
+    @WithMockUser()
+    void testGetMenuDetail_NotCategoryFound() throws Exception {
+
+        when(menuService.getMenueDetails(1,0,1))
+                .thenThrow(new CategoryNotFoundException(0));
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/restaurants/1/category/0/menus/1"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
@@ -108,7 +194,7 @@ public class MenuControllerTest {
         RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
         CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
 
-        Optional<MenuResource> result = Optional.of(new MenuResource(1, "menu 1", category.getId()));
+        MenuResource result = new MenuResource(1, "menu 1", category.getId());
         when(menuService.getMenueDetails(1,1,1))
                 .thenReturn(result);
 
@@ -116,9 +202,9 @@ public class MenuControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.*", hasSize(3)))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id", equalTo(((int) result.get().getId()))))
-                .andExpect(jsonPath("$.name", equalTo(result.get().getName())))
-                .andExpect(jsonPath("$.category", equalTo((int) result.get().getCategory())))
+                .andExpect(jsonPath("$.id", equalTo(((int) result.getId()))))
+                .andExpect(jsonPath("$.name", equalTo(result.getName())))
+                .andExpect(jsonPath("$.category", equalTo((int) result.getCategory())))
         ;
     }
     @Test
