@@ -15,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -52,6 +53,26 @@ public class MenuItemServiceImpl implements MenuItemService {
         else{
             throw new Exception("Menu with id " + menu_id + " not belong to Category");
         }
+
+    }
+
+    @Override
+    public List<ItemResource> getItemsbyIds(Integer[] itemsIds) throws Exception {
+        List<ItemResource> result = new ArrayList<>();;
+        for (Integer itemsId : itemsIds) {
+            try {
+                Optional<ItemEntity> itemEntityOptional = menuItemRepository.findById(Long.valueOf(itemsId));
+                if (itemEntityOptional.isPresent()) {
+                    ItemEntity itemEntity = itemEntityOptional.get();
+                    result.add(itemEntity.toItemResource());
+                }
+
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+        return result;
 
     }
 

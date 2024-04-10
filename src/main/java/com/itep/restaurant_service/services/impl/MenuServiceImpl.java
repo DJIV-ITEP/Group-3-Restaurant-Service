@@ -9,10 +9,7 @@ import com.itep.restaurant_service.repositories.entities.ItemEntity;
 import com.itep.restaurant_service.repositories.entities.MenuEntity;
 import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
 import com.itep.restaurant_service.services.MenuService;
-import com.itep.restaurant_service.services.impl.errorsHandels.CategoryNotInRestaurantException;
-import com.itep.restaurant_service.services.impl.errorsHandels.MenuNotFoundException;
-import com.itep.restaurant_service.services.impl.errorsHandels.MenuNotInCategoryException;
-import com.itep.restaurant_service.services.impl.errorsHandels.RestaurantNotFoundException;
+import com.itep.restaurant_service.services.impl.errorsHandels.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -96,8 +93,11 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public MenuResource createMenu(long rest_id, long cat_id, MenuEntity body) throws Exception {
+        RestaurantEntity restaurant = restaurantRepository.findById(rest_id)
+                .orElseThrow(() -> new RestaurantNotFoundException(rest_id));
+
         CategoryEntity categoryEntity = categoryRepository.findById(cat_id)
-                .orElseThrow(() -> new Exception("Categoty not found"));
+                .orElseThrow(() -> new CategoryNotInRestaurantException(cat_id));
         if(RestaurantUtils.isCategoryInRestaurant(categoryEntity,rest_id)){
             if(RestaurantUtils.isRestaurantOwner(categoryEntity.getRestaurant(),SecurityContextHolder.getContext().getAuthentication().getName())){
                 try{
@@ -109,18 +109,18 @@ public class MenuServiceImpl implements MenuService {
                         throw new Exception("menu with this name already exists in category");
                     }
                     else if (e.getMessage().contains("not-null property references a null")) {
-                        throw new Exception("You must provide all the category fields");
+                        throw new Exception("You must provide all the menu fields");
                     }
                     System.out.println(e.getMessage());
                     throw new Exception(e.getMessage());
                 }
             }
             else{
-                throw new Exception("you are not the owner of Restaurant");
+                throw new UserNotOwnerOfRestaurantException();
             }
         }
         else{
-            throw new Exception("Category with id " + cat_id + " not belong to Restaurant");
+            throw new CategoryNotInRestaurantException(cat_id);
         }
 
 
@@ -128,8 +128,13 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     public MenuResource updateMenu(long rest_id, long cat_id,long id, MenuEntity body) throws Exception {
+        RestaurantEntity restaurant = restaurantRepository.findById(rest_id)
+                .orElseThrow(() -> new RestaurantNotFoundException(rest_id));
+
+        CategoryEntity categoryEntity = categoryRepository.findById(cat_id)
+                .orElseThrow(() -> new CategoryNotInRestaurantException(cat_id));
         MenuEntity menuEntity = menuRepository.findById(id)
-                .orElseThrow(() -> new Exception("Menu not found"));
+                .orElseThrow(() -> new MenuNotFoundException(id));
         if(RestaurantUtils.isMenuInCategory(menuEntity,cat_id)){
             if(RestaurantUtils.isCategoryInRestaurant(menuEntity.getCategory(), rest_id)){
                 if(RestaurantUtils.isRestaurantOwner(menuEntity.getCategory().getRestaurant(),SecurityContextHolder.getContext().getAuthentication().getName() )){
@@ -147,15 +152,15 @@ public class MenuServiceImpl implements MenuService {
 
                 }
                 else {
-                    throw new Exception("you are not the owner of Restaurant");
+                    throw new UserNotOwnerOfRestaurantException();
                 }
             }
             else{
-                throw new Exception("Category with id " + cat_id + " not belong to Restaurant");
+                throw new CategoryNotInRestaurantException( cat_id );
             }
         }
         else{
-            throw new Exception("Menu with id " + id + " not belong to Category");
+            throw new MenuNotInCategoryException( id );
         }
 
 
@@ -167,8 +172,13 @@ public class MenuServiceImpl implements MenuService {
     @Override
     public void deleteMenu(long rest_id, long cat_id,long id) throws Exception {
 
+        RestaurantEntity restaurant = restaurantRepository.findById(rest_id)
+                .orElseThrow(() -> new RestaurantNotFoundException(rest_id));
+
+        CategoryEntity categoryEntity = categoryRepository.findById(cat_id)
+                .orElseThrow(() -> new CategoryNotInRestaurantException(cat_id));
         MenuEntity menuEntity = menuRepository.findById(id)
-                .orElseThrow(() -> new Exception("Menu not found"));
+                .orElseThrow(() -> new MenuNotFoundException(id));
         if(RestaurantUtils.isMenuInCategory(menuEntity,cat_id)){
             if(RestaurantUtils.isCategoryInRestaurant(menuEntity.getCategory(), rest_id)){
                 if(RestaurantUtils.isRestaurantOwner(menuEntity.getCategory().getRestaurant(),SecurityContextHolder.getContext().getAuthentication().getName() )){
@@ -180,15 +190,15 @@ public class MenuServiceImpl implements MenuService {
 
                 }
                 else {
-                    throw new Exception("you are not the owner of Restaurant");
+                    throw new UserNotOwnerOfRestaurantException();
                 }
             }
             else{
-                throw new Exception("Category with id " + cat_id + " not belong to Restaurant");
+                throw new CategoryNotInRestaurantException(cat_id );
             }
         }
         else{
-            throw new Exception("Menu with id " + id + " not belong to Category");
+            throw new MenuNotInCategoryException( id );
         }
 
 

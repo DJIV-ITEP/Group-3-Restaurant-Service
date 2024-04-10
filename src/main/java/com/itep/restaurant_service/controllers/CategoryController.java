@@ -26,7 +26,9 @@ public class CategoryController {
     public ResponseEntity<Object> getCategory(@PathVariable long restaurantId) throws Exception {
         try {
             List<CategoryResource> result = categoryService.getCategory(restaurantId);
-            return new ResponseEntity<>(result,HttpStatus.OK);
+            return new ResponseEntity<>(Map.of(
+                    "code",200,
+                    "data",Map.of("items",result)),HttpStatus.OK);
         } catch (RestaurantNotFoundException e) {
             return new ResponseEntity<>(
                     Map.of("message",e.getMessage(), "code",404)
@@ -42,7 +44,8 @@ public class CategoryController {
     public ResponseEntity<Object> getCategory(@PathVariable long restaurantId,@PathVariable long categoryId) throws Exception {
         try{
             CategoryResource categoryResource = categoryService.getCategoryDetails(restaurantId,categoryId);
-            return new ResponseEntity<>(categoryResource,HttpStatus.OK);
+            return new ResponseEntity<>(Map.of("code",200,
+                    "data",Map.of("item",categoryResource)),HttpStatus.OK);
         }
         catch (RestaurantNotFoundException | CategoryNotFoundException | CategoryNotInRestaurantException e){
             return new ResponseEntity<>(

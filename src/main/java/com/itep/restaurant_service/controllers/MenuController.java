@@ -24,7 +24,8 @@ public class MenuController {
     public ResponseEntity<Object> getMenus(@PathVariable long rest_id, @PathVariable long cat_id) throws Exception {
         try{
             List<MenuResource> result = menuService.getMenues(rest_id, cat_id);
-            return new ResponseEntity<>(result, HttpStatus.OK);
+            return new ResponseEntity<>(Map.of("code",200,
+                    "data",Map.of("items",result)), HttpStatus.OK);
         }
         catch (RestaurantNotFoundException | CategoryNotFoundException e){
             return new ResponseEntity<>( Map.of("message",e.getMessage(), "status",404)
@@ -42,7 +43,8 @@ public class MenuController {
     public ResponseEntity<Object> getMenuDetails(@PathVariable long rest_id, @PathVariable long cat_id, @PathVariable long menu_id) throws Exception {
         try{
             MenuResource menuResource = menuService.getMenueDetails(rest_id,cat_id,menu_id);
-            return new ResponseEntity<>(menuResource,HttpStatus.OK);
+            return new ResponseEntity<>(Map.of("code",200,
+        "data",Map.of("item",menuResource)),HttpStatus.OK);
         }
         catch (RestaurantNotFoundException | CategoryNotFoundException | MenuNotFoundException e){
             return new ResponseEntity<>(
@@ -64,12 +66,39 @@ public class MenuController {
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @PostMapping("/restaurants/{rest_id}/category/{cat_id}/menus")
     public ResponseEntity<Object> createMenu(@PathVariable long rest_id, @PathVariable long cat_id ,@RequestBody MenuEntity addMenu) throws Exception {
+            try{
+                MenuResource addResource = menuService.createMenu(rest_id,cat_id, addMenu);
+                return new ResponseEntity<>(Map.of(
+                        "message","Menu created successfully",
+                        "status",200
+                ), HttpStatus.OK);
+            }
+            catch (RestaurantNotFoundException | CategoryNotFoundException e){
+                return new ResponseEntity<>(Map.of(
+                        "message",e.getMessage(),
+                        "status",404
+                ), HttpStatus.NOT_FOUND);
+            }
+            catch (CategoryNotInRestaurantException ee){
+                return new ResponseEntity<>(
+                        Map.of("message", ee.getMessage(),
+                                "status", 400)
+                        , HttpStatus.BAD_REQUEST);
+            }
+            catch (UserNotOwnerOfRestaurantException  e1){
+                return new ResponseEntity<>(
+                        Map.of("message",e1.getMessage(), "code",403)
+                        , HttpStatus.FORBIDDEN
+                );
 
-            MenuResource addResource = menuService.createMenu(rest_id,cat_id, addMenu);
-            return new ResponseEntity<>(Map.of(
-                    "message","Menu created successfully",
-                    "status",200
-            ), HttpStatus.OK);
+            }
+            catch (Exception ex){
+                return new ResponseEntity<>(
+                        Map.of("message",ex.getMessage(), "code",400)
+                        , HttpStatus.BAD_REQUEST
+                );
+            }
+
 
 
 
@@ -77,23 +106,76 @@ public class MenuController {
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @PutMapping("/restaurants/{rest_id}/category/{cat_id}/menus/{id}")
     public ResponseEntity<Object> updateMenu(@PathVariable long rest_id,@PathVariable long cat_id,@PathVariable long id, @RequestBody MenuEntity updatedMenu) throws Exception {
+            try {
+                MenuResource updatedResource = menuService.updateMenu(rest_id,cat_id,id, updatedMenu);
+                return new  ResponseEntity<>(Map.of(
+                        "message", "Menu updated successfully",
+                        "status", 200
+                ),HttpStatus.OK);
+            }
+            catch (RestaurantNotFoundException | CategoryNotFoundException | MenuNotFoundException e){
+                return new ResponseEntity<>(
+                        Map.of("message",e.getMessage(), "code",404)
+                        , HttpStatus.NOT_FOUND
+                );
+            }
+            catch (UserNotOwnerOfRestaurantException  e1){
+                return new ResponseEntity<>(
+                        Map.of("message",e1.getMessage(), "code",403)
+                        , HttpStatus.FORBIDDEN
+                );
 
-            MenuResource updatedResource = menuService.updateMenu(rest_id,cat_id,id, updatedMenu);
-            return ResponseEntity.ok(Map.of(
-                    "message", "Menu updated successfully",
-                    "status", 200
-            ));
+            }
+            catch (CategoryNotInRestaurantException | MenuNotInCategoryException ee){
+                return new ResponseEntity<>(
+                        Map.of("message", ee.getMessage(),
+                                "status", 400)
+                        , HttpStatus.BAD_REQUEST);
+            }
+            catch (Exception ex){
+                return new ResponseEntity<>(
+                        Map.of("message",ex.getMessage(), "code",400)
+                        , HttpStatus.BAD_REQUEST
+                );
+            }
+
 
     }
     @PreAuthorize("hasRole('ROLE_RESTAURANT')")
     @DeleteMapping("/restaurants/{rest_id}/category/{cat_id}/menus/{id}")
     public ResponseEntity<Object> deleteMenu(@PathVariable long rest_id, @PathVariable long cat_id,@PathVariable long id) throws Exception {
+            try{
+                menuService.deleteMenu(rest_id,cat_id,id);
+                return ResponseEntity.ok(Map.of(
+                        "message", "Menu deleted successfully",
+                        "status", 200
+                ));
+            }
+            catch (RestaurantNotFoundException | CategoryNotFoundException | MenuNotFoundException e){
+                return new ResponseEntity<>(
+                        Map.of("message",e.getMessage(), "code",404)
+                        , HttpStatus.NOT_FOUND
+                );
+            }
+            catch (UserNotOwnerOfRestaurantException  e1){
+                return new ResponseEntity<>(
+                        Map.of("message",e1.getMessage(), "code",403)
+                        , HttpStatus.FORBIDDEN
+                );
 
-            menuService.deleteMenu(rest_id,cat_id,id);
-            return ResponseEntity.ok(Map.of(
-                    "message", "Menu deleted successfully",
-                    "status", 200
-            ));
+            }
+            catch (CategoryNotInRestaurantException | MenuNotInCategoryException ee){
+                return new ResponseEntity<>(
+                        Map.of("message", ee.getMessage(),
+                                "status", 400)
+                        , HttpStatus.BAD_REQUEST);
+            }
+            catch (Exception ex){
+                return new ResponseEntity<>(
+                        Map.of("message",ex.getMessage(), "code",400)
+                        , HttpStatus.BAD_REQUEST
+                );
+            }
 
     }
 }
