@@ -88,16 +88,16 @@ public class MenuItemControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.get("/restaurants/1/category/1/menus/1/item"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$",hasSize(1)))
-                .andExpect(jsonPath("$[0].*",hasSize(6)))
+                .andExpect(jsonPath("$.data.items",hasSize(1)))
+                .andExpect(jsonPath("$.data.items[0].*",hasSize(6)))
 
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].id", equalTo(((int) result.get(0).getId()))))
-                .andExpect(jsonPath("$[0].name", equalTo(result.get(0).getName())))
-                .andExpect(jsonPath("$[0].description", equalTo(result.get(0).getDescription())))
-                .andExpect(jsonPath("$[0].price", equalTo((double) result.get(0).getPrice())))
-                .andExpect(jsonPath("$[0].quantity", equalTo((double) result.get(0).getQuantity())))
-                .andExpect(jsonPath("$[0].menu", equalTo((int)result.get(0).getMenu())))
+                .andExpect(jsonPath("$.data.items[0].id", equalTo(((int) result.get(0).getId()))))
+                .andExpect(jsonPath("$.data.items[0].name", equalTo(result.get(0).getName())))
+                .andExpect(jsonPath("$.data.items[0].description", equalTo(result.get(0).getDescription())))
+                .andExpect(jsonPath("$.data.items[0].price", equalTo((double) result.get(0).getPrice())))
+                .andExpect(jsonPath("$.data.items[0].quantity", equalTo((double) result.get(0).getQuantity())))
+                .andExpect(jsonPath("$.data.items[0].menu", equalTo((int)result.get(0).getMenu())))
 
                 ;
 

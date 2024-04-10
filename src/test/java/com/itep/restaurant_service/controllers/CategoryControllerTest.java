@@ -91,12 +91,12 @@ public class CategoryControllerTest {
                 .thenReturn(result);
         mockMvc.perform(MockMvcRequestBuilders.get("/restaurants/1/category"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$",hasSize(2)))
-                .andExpect(jsonPath("$[0].*",hasSize(3)))
+                .andExpect(jsonPath("$.data.items",hasSize(2)))
+                .andExpect(jsonPath("$.data.items[0].*",hasSize(3)))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].id", equalTo(((int) result.get(0).getId()))))
-                .andExpect(jsonPath("$[0].name", equalTo(result.get(0).getName())))
-                .andExpect(jsonPath("$[0].restaurant", equalTo((int) result.get(0).getRestaurant())))
+                .andExpect(jsonPath("$.data.items[0].id", equalTo(((int) result.get(0).getId()))))
+                .andExpect(jsonPath("$.data.items[0].name", equalTo(result.get(0).getName())))
+                .andExpect(jsonPath("$.data.items[0].restaurant", equalTo((int) result.get(0).getRestaurant())))
 
                 ;
     }
@@ -164,11 +164,11 @@ public class CategoryControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.get("/restaurants/1/category/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.*", hasSize(3)))
+                .andExpect(jsonPath("$.data.item.*", hasSize(3)))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id", equalTo(((int) result.getId()))))
-                .andExpect(jsonPath("$.name", equalTo(result.getName())))
-                .andExpect(jsonPath("$.restaurant", equalTo((int) result.getRestaurant())))
+                .andExpect(jsonPath("$.data.item.id", equalTo(((int) result.getId()))))
+                .andExpect(jsonPath("$.data.item.name", equalTo(result.getName())))
+                .andExpect(jsonPath("$.data.item.restaurant", equalTo((int) result.getRestaurant())))
         ;
     }
     @Test
