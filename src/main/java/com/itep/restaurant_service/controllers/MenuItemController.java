@@ -27,16 +27,24 @@ public class MenuItemController {
     @GetMapping("/restaurants/{rest_id}/category/{cat_id}/menus/{menu_id}/item")
     public ResponseEntity<Object> getItems(@PathVariable Long rest_id,@PathVariable Long cat_id,@PathVariable Long menu_id) throws Exception {
         List<ItemResource> result = menuItemService.getItems(rest_id,cat_id,menu_id);
+        return new ResponseEntity<>(Map.of(
+                "code",200,
+                "data",Map.of("items",result)
+        ), HttpStatus.OK);
 
-        if(!result.isEmpty()) {
-            return new ResponseEntity<>(result, HttpStatus.OK);
-        }
-        else{
-            return new ResponseEntity<>( Map.of("message","no item found for this menu", "status",200)
-                    , HttpStatus.OK);
-        }
 
     }
+    @GetMapping("/restaurants/item")
+    public ResponseEntity<Object> getItems(@RequestBody IntArrayReques request) throws Exception {
+        Integer[] itemsIds = request.getItemsIds();
+        List<ItemResource> result = menuItemService.getItemsbyIds(itemsIds);
+        return new ResponseEntity<>(
+                Map.of(
+                        "code",200,
+                        "data",Map.of("items",result)
+                        ), HttpStatus.OK);
+    }
+
     @GetMapping("/restaurants/{rest_id}/category/{cat_id}/menus/{menu_id}/item/{item_id}")
     public ResponseEntity<Object> getItemDetails(@PathVariable long rest_id, @PathVariable long cat_id, @PathVariable long menu_id, @PathVariable long item_id) throws Exception {
         var itemResource = menuItemService.getItemsDetails(rest_id,cat_id,menu_id,item_id);

@@ -34,6 +34,7 @@ import java.util.Optional;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -239,6 +240,105 @@ public class MenuControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "RESTAURANT",username = "aa",password = "123")
+    public void testCreateMenu_restaurantNotOwner() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
+        MenuEntity menu1 = new MenuEntity(1,"menu 1",category,null);
+        when(menuService.createMenu(1,1,menu1))
+                .thenThrow(new UserNotOwnerOfRestaurantException());
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+        String requestJson=ow.writeValueAsString(menu1);
+        mockMvc.perform(MockMvcRequestBuilders.post("/restaurants/1/category/1/menus").contentType(APPLICATION_JSON)
+                        .content(requestJson).with(csrf()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "RESTAURANT")
+    public void testCreateMenu_restaurantNotFound() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", null,null);
+        MenuEntity menu1 = new MenuEntity(1,"menu 1",category,null);
+        when(menuService.createMenu(0,1,menu1))
+                .thenThrow(new RestaurantNotFoundException(0));
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+        String requestJson=ow.writeValueAsString(menu1);
+        mockMvc.perform(MockMvcRequestBuilders.post("/restaurants/0/category/1/menus").contentType(APPLICATION_JSON)
+                        .content(requestJson).with(csrf()))
+                .andExpect(status().isNotFound());
+    }
+    @Test
+    @WithMockUser(roles = "RESTAURANT")
+    public void testCreateMenu_CategoryNotFound() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
+        MenuEntity menu1 = new MenuEntity(1,"menu 1",null,null);
+        when(menuService.createMenu(1,0,menu1))
+                .thenThrow(new CategoryNotFoundException(0));
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+        String requestJson=ow.writeValueAsString(menu1);
+        mockMvc.perform(MockMvcRequestBuilders.post("/restaurants/1/category/0/menus").contentType(APPLICATION_JSON)
+                        .content(requestJson).with(csrf()))
+                .andExpect(status().isNotFound());
+    }
+    @Test
+    @WithMockUser(roles = "RESTAURANT")
+    public void testCreateMenu_CategoryNotInRestaurant() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
+        MenuEntity menu1 = new MenuEntity(1,"menu 1",category,null);
+        when(menuService.createMenu(1,5,menu1))
+                .thenThrow(new CategoryNotInRestaurantException(5));
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+        String requestJson=ow.writeValueAsString(menu1);
+        mockMvc.perform(MockMvcRequestBuilders.post("/restaurants/1/category/5/menus").contentType(APPLICATION_JSON)
+                        .content(requestJson).with(csrf()))
+                .andExpect(status().isBadRequest());
+    }
+    @Test
+    @WithMockUser(roles = "RESTAURANT")
+    public void testCreateMenu_MissingValue() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
+        MenuEntity menu1 = new MenuEntity(1,null,category,null);
+        when(menuService.createMenu(1,1,menu1))
+                .thenThrow(new Exception("You must provide all the menu fields"));
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+        String requestJson=ow.writeValueAsString(menu1);
+        mockMvc.perform(MockMvcRequestBuilders.post("/restaurants/1/category/1/menus").contentType(APPLICATION_JSON)
+                        .content(requestJson).with(csrf()))
+                .andExpect(status().isBadRequest());
+    }
+    @Test
+    @WithMockUser(roles = "RESTAURANT")
+    public void testCreateMenu_alreadyExist() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
+        MenuEntity menu = new MenuEntity(1,"menu 1",category,null);
+        MenuEntity menu1 = new MenuEntity(1,"menu 1",category,null);
+        when(menuService.createMenu(1,1,menu1))
+                .thenThrow(new Exception("menu with this name already exists in category"));
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+        String requestJson=ow.writeValueAsString(menu1);
+        mockMvc.perform(MockMvcRequestBuilders.post("/restaurants/1/category/1/menus").contentType(APPLICATION_JSON)
+                        .content(requestJson).with(csrf()))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     @WithMockUser()
     public void testUpdateMenu_notuser() throws Exception {
         RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
@@ -270,6 +370,89 @@ public class MenuControllerTest {
                 .andExpect(status().isOk());
 
     }
+    @Test
+    @WithMockUser(roles = "RESTAURANT",username = "aa",password = "123")
+    public void testUpdateMenu_restaurantNotOwner() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
+        MenuEntity menu1 = new MenuEntity(1,"menu 1",category,null);
+        when(menuService.updateMenu(1,1,1,menu1))
+                .thenThrow(new UserNotOwnerOfRestaurantException());
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+        String requestJson=ow.writeValueAsString(menu1);
+        mockMvc.perform(MockMvcRequestBuilders.put("/restaurants/1/category/1/menus/1").contentType(APPLICATION_JSON)
+                        .content(requestJson).with(csrf()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "RESTAURANT")
+    public void testUpdateMenu_restaurantNotFound() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", null,null);
+        MenuEntity menu1 = new MenuEntity(1,"menu 1",category,null);
+        when(menuService.updateMenu(0,1,1,menu1))
+                .thenThrow(new RestaurantNotFoundException(0));
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+        String requestJson=ow.writeValueAsString(menu1);
+        mockMvc.perform(MockMvcRequestBuilders.put("/restaurants/0/category/1/menus/1").contentType(APPLICATION_JSON)
+                        .content(requestJson).with(csrf()))
+                .andExpect(status().isNotFound());
+    }
+    @Test
+    @WithMockUser(roles = "RESTAURANT")
+    public void testUpdateMenu_CategoryNotFound() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
+        MenuEntity menu1 = new MenuEntity(1,"menu 1",null,null);
+        when(menuService.updateMenu(1,0,1,menu1))
+                .thenThrow(new CategoryNotFoundException(0));
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+        String requestJson=ow.writeValueAsString(menu1);
+        mockMvc.perform(MockMvcRequestBuilders.put("/restaurants/1/category/0/menus/1").contentType(APPLICATION_JSON)
+                        .content(requestJson).with(csrf()))
+                .andExpect(status().isNotFound());
+    }
+    @Test
+    @WithMockUser(roles = "RESTAURANT")
+    public void testUpdateMenu_CategoryNotInRestaurant() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
+        MenuEntity menu1 = new MenuEntity(1,"menu 1",category,null);
+        when(menuService.updateMenu(1,5,1,menu1))
+                .thenThrow(new CategoryNotInRestaurantException(5));
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+        String requestJson=ow.writeValueAsString(menu1);
+        mockMvc.perform(MockMvcRequestBuilders.put("/restaurants/1/category/5/menus/1").contentType(APPLICATION_JSON)
+                        .content(requestJson).with(csrf()))
+                .andExpect(status().isBadRequest());
+    }
+    @Test
+    @WithMockUser(roles = "RESTAURANT")
+    public void testUpdateMenu_MissingValue() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
+        MenuEntity menu1 = new MenuEntity(1,null,category,null);
+        when(menuService.updateMenu(1,1,1,menu1))
+                .thenThrow(new Exception("You must provide all the menu fields"));
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+        String requestJson=ow.writeValueAsString(menu1);
+        mockMvc.perform(MockMvcRequestBuilders.put("/restaurants/1/category/1/menus/1").contentType(APPLICATION_JSON)
+                        .content(requestJson).with(csrf()))
+                .andExpect(status().isBadRequest());
+    }
+
+
 
 
     @Test
@@ -307,6 +490,96 @@ public class MenuControllerTest {
     }
 
 
+    @Test
+    @WithMockUser(roles = "RESTAURANT",username = "aa",password = "123")
+    public void testDeleteMenu_restaurantNotOwner() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
+        MenuEntity menu1 = new MenuEntity(1,"menu 1",category,null);
+        doThrow(new UserNotOwnerOfRestaurantException()).when(menuService).deleteMenu(1, 1,1);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+        String requestJson=ow.writeValueAsString(menu1);
+        mockMvc.perform(MockMvcRequestBuilders.delete("/restaurants/1/category/1/menus/1").contentType(APPLICATION_JSON)
+                        .content(requestJson).with(csrf()))
+                .andExpect(status().isForbidden());
+    }
 
+    @Test
+    @WithMockUser(roles = "RESTAURANT")
+    public void testDeleteMenu_restaurantNotFound() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", null,null);
+        MenuEntity menu1 = new MenuEntity(1,"menu 1",category,null);
+        doThrow(new RestaurantNotFoundException(1)).when(menuService).deleteMenu(0, 1,1);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+        String requestJson=ow.writeValueAsString(menu1);
+        mockMvc.perform(MockMvcRequestBuilders.delete("/restaurants/0/category/1/menus/1").contentType(APPLICATION_JSON)
+                        .content(requestJson).with(csrf()))
+                .andExpect(status().isNotFound());
+    }
+    @Test
+    @WithMockUser(roles = "RESTAURANT")
+    public void testDeleteMenu_CategoryNotFound() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
+        MenuEntity menu1 = new MenuEntity(1,"menu 1",null,null);
+        doThrow(new CategoryNotFoundException(1)).when(menuService).deleteMenu(1, 0,1);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+        String requestJson=ow.writeValueAsString(menu1);
+        mockMvc.perform(MockMvcRequestBuilders.delete("/restaurants/1/category/0/menus/1").contentType(APPLICATION_JSON)
+                        .content(requestJson).with(csrf()))
+                .andExpect(status().isNotFound());
+    }
+    @Test
+    @WithMockUser(roles = "RESTAURANT")
+    public void testDeleteMenu_CategoryNotInRestaurant() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
+        MenuEntity menu1 = new MenuEntity(1,"menu 1",category,null);
+        doThrow(new CategoryNotInRestaurantException(1)).when(menuService).deleteMenu(1, 5,1);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+        String requestJson=ow.writeValueAsString(menu1);
+        mockMvc.perform(MockMvcRequestBuilders.delete("/restaurants/1/category/5/menus/1").contentType(APPLICATION_JSON)
+                        .content(requestJson).with(csrf()))
+                .andExpect(status().isBadRequest());
+    }
+    @Test
+    @WithMockUser(roles = "RESTAURANT")
+    public void testDeleteMenu_MenuNotInCategory() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
+        MenuEntity menu1 = new MenuEntity(1,"menu 1",category,null);
+        doThrow(new MenuNotInCategoryException(1)).when(menuService).deleteMenu(1, 1,5);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+        String requestJson=ow.writeValueAsString(menu1);
+        mockMvc.perform(MockMvcRequestBuilders.delete("/restaurants/1/category/1/menus/5").contentType(APPLICATION_JSON)
+                        .content(requestJson).with(csrf()))
+                .andExpect(status().isBadRequest());
+    }
+    @Test
+    @WithMockUser(roles = "RESTAURANT")
+    public void testDeleteMenu_GeneralException() throws Exception {
+        RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "status", "food", "cuisine", new UserEntity("rest1", "123"), null);
+        CategoryEntity category = new CategoryEntity(1,"name", restaurant,null);
+        MenuEntity menu1 = new MenuEntity(1,"menu 1",category,null);
+        doThrow(new Exception("1")).when(menuService).deleteMenu(1, 1,5);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+        String requestJson=ow.writeValueAsString(menu1);
+        mockMvc.perform(MockMvcRequestBuilders.delete("/restaurants/1/category/1/menus/5").contentType(APPLICATION_JSON)
+                        .content(requestJson).with(csrf()))
+                .andExpect(status().isBadRequest());
+    }
 
 }
