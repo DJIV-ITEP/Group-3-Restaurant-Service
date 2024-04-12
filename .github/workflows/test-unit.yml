@@ -1,0 +1,27 @@
+name: Unit Test
+
+on:
+  push:
+    branches-ignore:
+      - develop
+
+jobs:
+
+  test:
+    name: Test - Units, Integrations & Acceptance
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      - name: Maven Package
+        run: mvn -B clean package -DskipTests
+      - name: Unit & Integration Tests
+        run: mvn -B clean verify -Pintegration-test
+      - name: Acceptance Tests
+        run: mvn -B clean verify -Pacceptance-tests

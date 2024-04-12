@@ -28,11 +28,16 @@ import java.util.stream.Collectors;
 public class CategoryServiceImpl implements CategoryService {
 
 
-    @Autowired
-    private CategoryRepository categoryRepository;
 
-    @Autowired
-    private RestaurantRepository restaurantRepository;
+    final private CategoryRepository categoryRepository;
+
+
+    final private RestaurantRepository restaurantRepository;
+
+    public CategoryServiceImpl(CategoryRepository categoryRepository, RestaurantRepository restaurantRepository){
+        this.categoryRepository = categoryRepository;
+        this.restaurantRepository = restaurantRepository;
+    }
     @Override
     public List<CategoryResource> getCategory(long restaurantId) throws Exception {
         RestaurantEntity restaurant = restaurantRepository.findById(restaurantId)
@@ -74,8 +79,12 @@ public class CategoryServiceImpl implements CategoryService {
         if(RestaurantUtils.isRestaurantOwner(restaurantEntity,SecurityContextHolder.getContext().getAuthentication().getName())){
             try{
                 body.setRestaurant(restaurantEntity);
+                CategoryEntity categoryEntity = categoryRepository.save(body);
+                List <CategoryEntity> cat = restaurantEntity.getCategories();
+                cat.add(categoryEntity);
+                restaurantEntity.setCategories(cat);
 
-                return categoryRepository.save(body).toCategoryResource();
+                return categoryEntity.toCategoryResource();
             }
             catch (Exception e){
                 if(e.getMessage().contains("duplicate key value violates unique constraint")){

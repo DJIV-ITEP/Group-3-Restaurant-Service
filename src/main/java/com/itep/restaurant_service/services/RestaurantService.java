@@ -1,7 +1,7 @@
 package com.itep.restaurant_service.services;
 
 import com.itep.restaurant_service.models.RestaurantResource;
-import com.itep.restaurant_service.models.UserResource;
+//import com.itep.restaurant_service.models.UserResource;
 import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
 import com.itep.restaurant_service.repositories.entities.UserEntity;
 import org.springframework.http.ResponseEntity;

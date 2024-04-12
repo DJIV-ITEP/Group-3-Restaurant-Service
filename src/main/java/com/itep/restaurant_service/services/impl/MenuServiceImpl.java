@@ -24,15 +24,17 @@ import java.util.stream.Collectors;
 @Service
 public class MenuServiceImpl implements MenuService {
 
-    @Autowired
-    private CategoryRepository categoryRepository;
+    final private CategoryRepository categoryRepository;
 
-    @Autowired
-    private MenuRepository menuRepository;
-    @Autowired
-    private RestaurantRepository restaurantRepository;
+    final private MenuRepository menuRepository;
 
+    final private RestaurantRepository restaurantRepository;
 
+    public MenuServiceImpl(RestaurantRepository restaurantRepository,CategoryRepository categoryRepository, MenuRepository menuRepository){
+        this.restaurantRepository = restaurantRepository;
+        this.categoryRepository = categoryRepository;
+        this.menuRepository = menuRepository;
+    }
 
 
 
@@ -102,7 +104,11 @@ public class MenuServiceImpl implements MenuService {
             if(RestaurantUtils.isRestaurantOwner(categoryEntity.getRestaurant(),SecurityContextHolder.getContext().getAuthentication().getName())){
                 try{
                     body.setCategory(categoryEntity);
-                    return menuRepository.save(body).toMenuResource();
+                    MenuEntity menuEntity= menuRepository.save(body);
+                    List<MenuEntity> men = categoryEntity.getMenus();
+                    men.add(menuEntity);
+                    categoryEntity.setMenus(men);
+                    return menuEntity.toMenuResource();
                 }
                 catch (Exception e){
                     if(e.getMessage().contains("duplicate key value violates unique constraint")){

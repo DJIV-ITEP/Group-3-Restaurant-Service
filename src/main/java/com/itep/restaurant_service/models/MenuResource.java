@@ -8,24 +8,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-@NoArgsConstructor
+
 @AllArgsConstructor
 @Getter
-@Setter
 @Builder
 public class MenuResource {
     private long id;
     private String name;
     private long category;
-    public MenuResource(Long id, String name){}
-    public MenuResource(Long id, String name, long category){}
 
-    public MenuResource(Long id, String name, long category, List<ItemEntity> items){
-        id = id;
-        name = name;
-        category = category;
-        items = items;
-    }
+
 
 
 }

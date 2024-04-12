@@ -1,0 +1,100 @@
+#name: Java CI
+#
+#on:
+#  push:
+#    branches:
+#      - main
+#
+#jobs:
+#  build:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v4
+#
+#      - name: Set up JDK 17
+#        uses: actions/setup-java@v4
+#        with:
+#          distribution: 'temurin'
+#          java-version: '17'
+#
+#      - name: Build with Maven
+#        run: mvn -B package --file pom.xml
+#
+#      - name: Run tests with Maven
+#        run: mvn test --file pom.xml
+
+##  Java CI to test, create and upload release on pull request
+name: Develop Branch
+
+on:
+  pull_request:
+    branches:
+      - develop
+  push:
+    branches:
+      - develop
+
+
+env:
+  build-number: ${GITHUB_RUN_NUMBER}
+
+jobs:
+
+  test:
+    name: Test - Units, Integrations & Acceptance
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      - name: Maven Package
+        run: mvn -B clean package -DskipTests
+      - name:  Unit & Integration Tests
+        run: mvn -B clean verify -Pintegration-test
+      - name: Acceptance Tests
+        run: mvn -B clean verify -Pacceptance-tests
+
+
+  build:
+    name: Publish - GitHub Packages
+    needs:
+      - test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      repository-projects: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      - run: mvn clean package -DskipTests
+      - run: mkdir staging && mv target/restaurant_service-*.jar target/restaurant_service-${{ env.build-number }}.jar && cp target/*.jar staging
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Package
+          path: staging
+          retention-days: 1
+
+      - name: Show contents of the target directory
+        run: ls -la target
+
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "${{ github.run_number }}"
+          title: "Automated Build ${{ github.run_number }}"
+          prerelease: false
+          files: staging/*.jar
+
