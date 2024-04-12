@@ -31,8 +31,8 @@ public class MenuEntity {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "menu", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<ItemEntity> items;
 
-    public MenuEntity(String newMenu) {
-    }
+//    public MenuEntity(String newMenu) {
+//    }
 
 
 

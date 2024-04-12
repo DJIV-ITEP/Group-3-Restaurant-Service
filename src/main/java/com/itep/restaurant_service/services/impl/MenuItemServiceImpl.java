@@ -5,10 +5,13 @@ import com.itep.restaurant_service.models.ItemResource;
 import com.itep.restaurant_service.repositories.CategoryRepository;
 import com.itep.restaurant_service.repositories.MenuItemRepository;
 import com.itep.restaurant_service.repositories.MenuRepository;
+import com.itep.restaurant_service.repositories.RestaurantRepository;
 import com.itep.restaurant_service.repositories.entities.CategoryEntity;
 import com.itep.restaurant_service.repositories.entities.ItemEntity;
 import com.itep.restaurant_service.repositories.entities.MenuEntity;
+import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
 import com.itep.restaurant_service.services.MenuItemService;
+import com.itep.restaurant_service.services.impl.errorsHandels.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -23,17 +26,29 @@ import java.util.stream.Collectors;
 
 @Service
 public class MenuItemServiceImpl implements MenuItemService {
-    @Autowired
-    private MenuItemRepository menuItemRepository;
+    final private MenuItemRepository menuItemRepository;
+    final private RestaurantRepository restaurantRepository;
 
-    @Autowired
-    private MenuRepository menuRepository;
-    @Autowired
-    private CategoryRepository categoryRepository;
+    final private MenuRepository menuRepository;
+    final private CategoryRepository categoryRepository;
+
+    public MenuItemServiceImpl(RestaurantRepository restaurantRepository,CategoryRepository categoryRepository,
+                               MenuRepository menuRepository, MenuItemRepository menuItemRepository){
+        this.restaurantRepository = restaurantRepository;
+        this.categoryRepository = categoryRepository;
+        this.menuRepository = menuRepository;
+        this.menuItemRepository = menuItemRepository;
+    }
     @Override
     public List<ItemResource> getItems(long rest_id, long cat_id,long menu_id) throws Exception {
+        RestaurantEntity restaurant = restaurantRepository.findById(rest_id)
+                .orElseThrow(() -> new RestaurantNotFoundException(rest_id));
+
+        CategoryEntity categoryEntity = categoryRepository.findById(cat_id)
+                .orElseThrow(() -> new CategoryNotInRestaurantException(cat_id));
+
         MenuEntity menuEntity = menuRepository.findById(menu_id)
-                .orElseThrow(() -> new Exception("menu not found"));
+                .orElseThrow(() -> new MenuNotFoundException(menu_id));
 
         if(RestaurantUtils.isMenuInCategory(menuEntity, cat_id)){
             if(RestaurantUtils.isCategoryInRestaurant(menuEntity.getCategory(), rest_id)){
@@ -47,11 +62,11 @@ public class MenuItemServiceImpl implements MenuItemService {
                 }
             }
             else{
-                throw new Exception("Category with id " + cat_id + " not belong to Restaurant");
+                throw new CategoryNotInRestaurantException( cat_id );
             }
         }
         else{
-            throw new Exception("Menu with id " + menu_id + " not belong to Category");
+            throw new MenuNotInCategoryException( menu_id );
         }
 
     }
@@ -68,6 +83,7 @@ public class MenuItemServiceImpl implements MenuItemService {
                 }
 
             } catch (Exception e) {
+
                 System.out.println(e.getMessage());
             }
         }
@@ -77,30 +93,39 @@ public class MenuItemServiceImpl implements MenuItemService {
     }
 
     @Override
-    public Optional<ItemResource> getItemsDetails(long rest_id, long cat_id, long menu_id, long item_id) throws Exception {
+    public ItemResource getItemsDetails(long rest_id, long cat_id, long menu_id, long item_id) throws Exception {
+        RestaurantEntity restaurant = restaurantRepository.findById(rest_id)
+                .orElseThrow(() -> new RestaurantNotFoundException(rest_id));
+
+        CategoryEntity categoryEntity = categoryRepository.findById(cat_id)
+                .orElseThrow(() -> new CategoryNotInRestaurantException(cat_id));
+
+        MenuEntity menuEntity = menuRepository.findById(menu_id)
+                .orElseThrow(() -> new MenuNotFoundException(menu_id));
         ItemEntity itemEntity = menuItemRepository.findById(item_id)
-                .orElseThrow(() -> new Exception("item not found"));
+                .orElseThrow(() -> new ItemNotFoundException(item_id));
+
         if(RestaurantUtils.isItemInMenu(itemEntity,menu_id)){
             if(RestaurantUtils.isMenuInCategory(itemEntity.getMenu(),cat_id)){
                 if(RestaurantUtils.isCategoryInRestaurant(itemEntity.getMenu().getCategory(), rest_id)){
                     try{
-                        Optional<ItemEntity> yourEntityOptional = menuItemRepository.findById(item_id);
-                        return yourEntityOptional.map(ItemEntity::toItemResource);
+
+                        return itemEntity.toItemResource();
                     }
                     catch (Exception e){
                         throw new Exception(e.getMessage());
                     }
                 }
                 else{
-                    throw new Exception("Category with id " + cat_id + " not belong to Restaurant");
+                    throw new CategoryNotInRestaurantException(cat_id );
                 }
             }
             else{
-                throw new Exception("Menu with id " + menu_id + " not belong to Category");
+                throw new MenuNotInCategoryException(menu_id );
             }
         }
         else{
-            throw new Exception("item with id " + item_id + " not belong to menu");
+            throw new ItemNotInMenuException( item_id );
         }
 
 
@@ -111,15 +136,25 @@ public class MenuItemServiceImpl implements MenuItemService {
 
     @Override
     public ItemResource createItem(long rest_id,long cat_id,long menu_id, ItemEntity body) throws Exception {
+        RestaurantEntity restaurant = restaurantRepository.findById(rest_id)
+                .orElseThrow(() -> new RestaurantNotFoundException(rest_id));
+
+        CategoryEntity categoryEntity = categoryRepository.findById(cat_id)
+                .orElseThrow(() -> new CategoryNotInRestaurantException(cat_id));
+
         MenuEntity menuEntity = menuRepository.findById(menu_id)
-                .orElseThrow(() -> new Exception("menu not found"));
+                .orElseThrow(() -> new MenuNotFoundException(menu_id));
 
         if(RestaurantUtils.isMenuInCategory(menuEntity, cat_id)){
             if(RestaurantUtils.isCategoryInRestaurant(menuEntity.getCategory(), rest_id)){
                 if(RestaurantUtils.isRestaurantOwner(menuEntity.getCategory().getRestaurant(),SecurityContextHolder.getContext().getAuthentication().getName())){
                     try{
                         body.setMenu(menuEntity);
-                        return menuItemRepository.save(body).toItemResource();
+                        ItemEntity itemEntity = menuItemRepository.save(body);
+                        List<ItemEntity> items = menuEntity.getItems();
+                        items.add(itemEntity);
+                        menuEntity.setItems(items);
+                        return itemEntity.toItemResource();
 
                     }
                     catch (Exception e){
@@ -133,15 +168,15 @@ public class MenuItemServiceImpl implements MenuItemService {
                     }
                 }
                 else{
-                    throw new Exception("you are not the owner of Restaurant");
+                    throw new UserNotOwnerOfRestaurantException();
                 }
             }
             else{
-                throw new Exception("Category with id " + cat_id + " not belong to Restaurant");
+                throw new CategoryNotInRestaurantException( cat_id );
             }
         }
         else{
-            throw new Exception("Menu with id " + menu_id + " not belong to Category");
+            throw new MenuNotInCategoryException( menu_id );
         }
 
 
@@ -151,8 +186,17 @@ public class MenuItemServiceImpl implements MenuItemService {
 
     @Override
     public ItemResource updateItem(long rest_id,long cat_id,long menu_id,long id, ItemEntity body) throws Exception {
+        RestaurantEntity restaurant = restaurantRepository.findById(rest_id)
+                .orElseThrow(() -> new RestaurantNotFoundException(rest_id));
+
+        CategoryEntity categoryEntity = categoryRepository.findById(cat_id)
+                .orElseThrow(() -> new CategoryNotInRestaurantException(cat_id));
+
+        MenuEntity menuEntity = menuRepository.findById(menu_id)
+                .orElseThrow(() -> new MenuNotFoundException(menu_id));
+
         ItemEntity itemEntity = menuItemRepository.findById(id)
-                .orElseThrow(() -> new Exception("item not found"));
+                .orElseThrow(() -> new ItemNotFoundException(id));
 
         if(RestaurantUtils.isItemInMenu(itemEntity, menu_id)){
             if(RestaurantUtils.isMenuInCategory(itemEntity.getMenu(),cat_id)){
@@ -179,19 +223,19 @@ public class MenuItemServiceImpl implements MenuItemService {
                         }
                     }
                     else{
-                        throw new Exception("you are not the owner of Restaurant");
+                        throw new UserNotOwnerOfRestaurantException();
                     }
                 }
                 else{
-                    throw new Exception("Category with id " + cat_id + " not belong to Restaurant");
+                    throw new CategoryNotInRestaurantException( cat_id );
                 }
             }
             else{
-                throw new Exception("Menu with id " + menu_id + " not belong to Category");
+                throw new MenuNotInCategoryException(menu_id);
             }
         }
         else{
-            throw new Exception("item with id " + id + " not belong to Menu");
+            throw new ItemNotInMenuException( id );
         }
 
 
@@ -204,8 +248,17 @@ public class MenuItemServiceImpl implements MenuItemService {
     @Override
     public void deleteItem(long rest_id,long cat_id,long menu_id,long id) throws Exception {
 
+        RestaurantEntity restaurant = restaurantRepository.findById(rest_id)
+                .orElseThrow(() -> new RestaurantNotFoundException(rest_id));
+
+        CategoryEntity categoryEntity = categoryRepository.findById(cat_id)
+                .orElseThrow(() -> new CategoryNotInRestaurantException(cat_id));
+
+        MenuEntity menuEntity = menuRepository.findById(menu_id)
+                .orElseThrow(() -> new MenuNotFoundException(menu_id));
+
         ItemEntity itemEntity = menuItemRepository.findById(id)
-                .orElseThrow(() -> new Exception("item not found"));
+                .orElseThrow(() -> new ItemNotFoundException(id));
 
         if(RestaurantUtils.isItemInMenu(itemEntity, menu_id)){
             if(RestaurantUtils.isMenuInCategory(itemEntity.getMenu(),cat_id)){
@@ -219,19 +272,19 @@ public class MenuItemServiceImpl implements MenuItemService {
                         }
                     }
                     else{
-                        throw new Exception("you are not the owner of Restaurant");
+                        throw new UserNotOwnerOfRestaurantException();
                     }
                 }
                 else{
-                    throw new Exception("Category with id " + cat_id + " not belong to Restaurant");
+                    throw new CategoryNotInRestaurantException(cat_id );
                 }
             }
             else{
-                throw new Exception("Menu with id " + menu_id + " not belong to Category");
+                throw new MenuNotInCategoryException( menu_id );
             }
         }
         else{
-            throw new Exception("item with id " + id + " not belong to Menu");
+            throw new ItemNotInMenuException( id );
         }
 
 

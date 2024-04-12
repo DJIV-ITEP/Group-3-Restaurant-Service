@@ -1,0 +1,40 @@
+#services:
+#  postgres:
+#    image: 'postgres:latest'
+#    environment:
+#      - 'POSTGRES_DB=restaurant'
+#      - 'POSTGRES_PASSWORD=postgres'
+#      - 'POSTGRES_USER=postgres'
+#    ports:
+#      - '5432'
+#
+version: '3.7'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_DB: restaurant
+      POSTGRES_USER: odoo15
+      POSTGRES_PASSWORD: azzadeen
+    ports:
+      - "5431:5432"
+    expose:
+      - "5432"
+
+  restaurantservice:
+    depends_on:
+      - postgres
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: restaurant-service
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/restaurant
+      SPRING_DATASOURCE_USERNAME: odoo15
+      SPRING_DATASOURCE_PASSWORD: azzadeen
