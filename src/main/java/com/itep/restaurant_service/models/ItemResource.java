@@ -6,17 +6,15 @@ import lombok.*;
 
 @AllArgsConstructor
 @Getter
-@Setter
 @Builder
 public class ItemResource {
 
     private long id;
     private String name;
     private double price;
+    private double quantity;
     private String description;
     private long menu;
-    public ItemResource(){}
-    public ItemResource(long id, String name, String description){}
-    public ItemResource(long id, String name, String description, long menu){}
+
 
 }

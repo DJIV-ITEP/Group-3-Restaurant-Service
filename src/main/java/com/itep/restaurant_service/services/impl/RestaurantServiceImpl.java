@@ -76,41 +76,15 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
 
     }
+
     @Override
-    public ResponseEntity<Object> setRestaurantStatus(long restaurantId, Map<String, Object> body) {
-        var restaurantEntity = restaurantRepository.findById(restaurantId);
-        if(restaurantEntity.isEmpty()){
-            return new ResponseEntity<>(
-                    Map.of("message", "Restaurant not found",
-                            "status", 404),
-                    HttpStatus.NOT_FOUND);
-        }
-        // check if the updated restaurant belong to the user who wants to update
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        var owner = getRestaurantOwner(restaurantId);
-        if (!auth.getName().equals(owner.get().getUsername())){
-            return new ResponseEntity<>(
-                    Map.of("message", "You don't have the permission to update this restaurant",
-                            "status", 403),
-                    HttpStatus.FORBIDDEN);
+    public Optional<RestaurantEntity> getRestaurantEntity(long restaurantId) {
+        return restaurantRepository.findById(restaurantId);
+    }
 
-        }
-
-        if("offline".equals(body.get("status"))||"online".equals(body.get("status"))) {
-            var restaurant = restaurantEntity.get();
-            restaurant.setStatus(body.get("status").toString());
-            restaurantRepository.save(restaurant);
-            return new ResponseEntity<>(
-                    Map.of("message", "Restaurant status updated successfully",
-                            "status", 200)
-                    , HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(
-                    Map.of("message", "Restaurant status must be either 'offline' or 'online' only",
-                            "status", 400)
-                    , HttpStatus.BAD_REQUEST);
-        }
-
+    @Override
+    public void setRestaurantStatus(RestaurantEntity restaurant) {
+        restaurantRepository.save(restaurant);
     }
     @Override
     public Optional<RestaurantResource> getRestaurantDetails(long restaurantId) {

@@ -1,7 +1,7 @@
 package com.itep.restaurant_service.repositories.entities;
 
 
-import com.itep.restaurant_service.models.UserResource;
+//import com.itep.restaurant_service.models.UserResource;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -21,11 +21,11 @@ public class UserEntity {
     private String username;
     @Column(name = "password")
     private String password;
-    public UserResource toAdminResource() {
-        return UserResource
-                .builder()
-                .username(username)
-                .password(password)
-                .build();
-    }
+//    public UserResource toAdminResource() {
+//        return UserResource
+//                .builder()
+//                .username(username)
+//                .password(password)
+//                .build();
+//    }
 }

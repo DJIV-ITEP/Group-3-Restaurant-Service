@@ -74,6 +74,35 @@ public class RestaurantController {
     @PutMapping("/restaurants/{restaurantId}/status")
 
     public ResponseEntity<Object> setRestaurantStatus(@PathVariable("restaurantId") long restaurantId, @RequestBody Map<String, Object> body){
-        return  restaurantService.setRestaurantStatus(restaurantId, body);
+        var restaurantEntity = restaurantService.getRestaurantEntity(restaurantId);
+        if(restaurantEntity.isEmpty()){
+            return new ResponseEntity<>(
+                    Map.of("message", "Restaurant not found",
+                            "status", 404),
+                    HttpStatus.NOT_FOUND);
+        }
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        var owner = restaurantService.getRestaurantOwner(restaurantId);
+        if (!auth.getName().equals(owner.get().getUsername())){
+            return new ResponseEntity<>(
+                    Map.of("message", "You don't have the permission to update this restaurant",
+                            "status", 403),
+                    HttpStatus.FORBIDDEN);
+
+        }
+        if("offline".equals(body.get("status"))||"online".equals(body.get("status"))) {
+            var restaurant = restaurantEntity.get();
+            restaurant.setStatus(body.get("status").toString());
+            restaurantService.setRestaurantStatus(restaurant);
+            return new ResponseEntity<>(
+                    Map.of("message", "Restaurant status updated successfully",
+                            "status", 200)
+                    , HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(
+                    Map.of("message", "Restaurant status must be either 'offline' or 'online' only",
+                            "status", 400)
+                    , HttpStatus.BAD_REQUEST);
+        }
     }
 }

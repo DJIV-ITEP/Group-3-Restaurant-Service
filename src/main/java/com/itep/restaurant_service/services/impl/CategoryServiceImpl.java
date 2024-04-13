@@ -8,6 +8,10 @@ import com.itep.restaurant_service.repositories.entities.CategoryEntity;
 import com.itep.restaurant_service.repositories.entities.MenuEntity;
 import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
 import com.itep.restaurant_service.services.CategoryService;
+import com.itep.restaurant_service.services.impl.errorsHandels.CategoryNotFoundException;
+import com.itep.restaurant_service.services.impl.errorsHandels.CategoryNotInRestaurantException;
+import com.itep.restaurant_service.services.impl.errorsHandels.RestaurantNotFoundException;
+import com.itep.restaurant_service.services.impl.errorsHandels.UserNotOwnerOfRestaurantException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -24,139 +28,149 @@ import java.util.stream.Collectors;
 public class CategoryServiceImpl implements CategoryService {
 
 
-    @Autowired
-    private CategoryRepository categoryRepository;
 
-    @Autowired
-    private RestaurantRepository restaurantRepository;
+    final private CategoryRepository categoryRepository;
+
+
+    final private RestaurantRepository restaurantRepository;
+
+    public CategoryServiceImpl(CategoryRepository categoryRepository, RestaurantRepository restaurantRepository){
+        this.categoryRepository = categoryRepository;
+        this.restaurantRepository = restaurantRepository;
+    }
     @Override
-    public List<CategoryResource> getCategory(long restaurantId) {
-        Optional<RestaurantEntity> yourEntityOptional = restaurantRepository.findById(restaurantId);
-        if (yourEntityOptional.isPresent()) {
-            return categoryRepository.findByRestaurantId(restaurantId).stream()
-                    .map(CategoryEntity::toCategoryResource)
-                    .collect(Collectors.toList());
-        }
-        else{
-            throw new EntityNotFoundException("Restaurant with id " + restaurantId + " not found");
-        }
+    public List<CategoryResource> getCategory(long restaurantId) throws Exception {
+        RestaurantEntity restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new RestaurantNotFoundException(restaurantId));
+        return categoryRepository.findByRestaurantId(restaurantId).stream()
+                .map(CategoryEntity::toCategoryResource)
+                .collect(Collectors.toList());
+
 
     }
 
     @Override
-    public Optional<CategoryResource> getCategoryDetails(long restaurantId, long categoryId) {
-        Optional<RestaurantEntity> yourEntityOptional = restaurantRepository.findById(restaurantId);
-        if (yourEntityOptional.isPresent()) {
-            Optional<CategoryEntity> categoryEntity = categoryRepository.findById(categoryId);
-            if(categoryEntity.isPresent()){
-                return categoryEntity.map(CategoryEntity::toCategoryResource);
-            }
-            else {
-                throw new EntityNotFoundException("Category with id " + categoryId + " not found");
-            }
+    public CategoryResource getCategoryDetails(long restaurantId, long categoryId) throws Exception {
+        RestaurantEntity restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new RestaurantNotFoundException(restaurantId));
 
+        CategoryEntity categoryEntity = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new CategoryNotInRestaurantException(categoryId));
+
+        if(RestaurantUtils.isCategoryInRestaurant(categoryEntity,restaurantId)){
+            return categoryEntity.toCategoryResource();
         }
         else{
-            throw new EntityNotFoundException("Restaurant with id " + restaurantId + " not found");
+            throw new CategoryNotInRestaurantException(categoryId );
         }
+
+
+
+
 
     }
 
     @Override
     public CategoryResource createCategory(long restaurantId, CategoryEntity body) throws Exception {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // Get the username of the current user
-        String username = authentication.getName();
-        Optional<RestaurantEntity> yourEntityOptional = restaurantRepository.findById(restaurantId);
-        if (yourEntityOptional.isPresent()) {
-            RestaurantEntity yourEntity = yourEntityOptional.get();
-            if(Objects.equals(yourEntity.getOwner().getUsername(), username)){
-                try{
-                    body.setRestaurant(yourEntity);
+        RestaurantEntity restaurantEntity = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new RestaurantNotFoundException(restaurantId));
 
-                    return categoryRepository.save(body).toCategoryResource();
-                }
-                catch (Exception e){
-                    if(e.getMessage().contains("duplicate key value violates unique constraint")){
-                        throw new Exception("category with this name already exists");
-                    }
-                    else if (e.getMessage().contains("not-null property references a null")) {
-                        throw new Exception("You must provide all the category fields");
-                    }
-                    throw new Exception("unknown error");
-                }
+        if(RestaurantUtils.isRestaurantOwner(restaurantEntity,SecurityContextHolder.getContext().getAuthentication().getName())){
+            try{
+                body.setRestaurant(restaurantEntity);
+                CategoryEntity categoryEntity = categoryRepository.save(body);
+                List <CategoryEntity> cat = restaurantEntity.getCategories();
+                cat.add(categoryEntity);
+                restaurantEntity.setCategories(cat);
 
+                return categoryEntity.toCategoryResource();
             }
-            else {
-                throw new EntityNotFoundException("you are not the owner of Restaurant "+yourEntity.getName());
+            catch (Exception e){
+                if(e.getMessage().contains("duplicate key value violates unique constraint")){
+                    throw new Exception("category with this name already exists");
+                }
+                else if (e.getMessage().contains("not-null property references a null")) {
+                    throw new Exception("You must provide all the category fields");
+                }
+                throw new Exception(e.getMessage());
             }
-
         }
         else{
-            throw new EntityNotFoundException("Restaurant with id " + restaurantId + " not found");
+            throw new UserNotOwnerOfRestaurantException();
         }
+
 
     }
 
     @Override
     public CategoryResource updateCategory(long restaurantId,long id, CategoryEntity body) throws Exception {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // Get the username of the current user
-        String username = authentication.getName();
+        RestaurantEntity restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new RestaurantNotFoundException(restaurantId));
+
+        CategoryEntity categoryEntity = categoryRepository.findById(id)
+                .orElseThrow(() -> new CategoryNotInRestaurantException(id));
 
 
-        CategoryEntity existCategory = categoryRepository.findById(id)
-                .orElseThrow(() -> new Exception("category not found"));
-        if(existCategory.getRestaurant().getId() == restaurantId){
-            if(Objects.equals(existCategory.getRestaurant().getOwner().getUsername(), username)){
-                existCategory.setName(body.getName());
-                try {
-                    return categoryRepository.save(existCategory).toCategoryResource();
-                } catch (Exception e) {
-                    throw new Exception("Failed to update menu");
+
+        if(RestaurantUtils.isCategoryInRestaurant(categoryEntity,restaurantId)){
+            if(RestaurantUtils.isRestaurantOwner(categoryEntity.getRestaurant(),SecurityContextHolder.getContext().getAuthentication().getName())){
+                if(!body.getName().isEmpty()){
+                    categoryEntity.setName(body.getName());
+                    try {
+                        return categoryRepository.save(categoryEntity).toCategoryResource();
+                    } catch (Exception e) {
+                        throw new Exception(e.getMessage());
+                    }
+                }
+                else{
+                    throw new Exception("name is required");
                 }
             }
             else{
-                throw new EntityNotFoundException("you are not the owner of Restaurant");
+                throw new UserNotOwnerOfRestaurantException();
             }
         }
         else{
-            throw new EntityNotFoundException("Category not belong to Restaurant");
+            throw new CategoryNotInRestaurantException(id);
         }
+
+
 
 
     }
 
     @Override
     public void deleteCategory(long restaurantId,long id) throws Exception {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        RestaurantEntity restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new RestaurantNotFoundException(restaurantId));
 
-        // Get the username of the current user
-        String username = authentication.getName();
+        CategoryEntity categoryEntity = categoryRepository.findById(id)
+                .orElseThrow(() -> new CategoryNotInRestaurantException(id));
 
 
-        CategoryEntity existCategory = categoryRepository.findById(id)
-                .orElseThrow(() -> new Exception("category not found"));
 
-        if(existCategory.getRestaurant().getId() == restaurantId){
-            if(Objects.equals(existCategory.getRestaurant().getOwner().getUsername(), username)){
-                try{
+        if(RestaurantUtils.isCategoryInRestaurant(categoryEntity,restaurantId)){
+            if(RestaurantUtils.isRestaurantOwner(categoryEntity.getRestaurant(),SecurityContextHolder.getContext().getAuthentication().getName())){
+
+                try {
                     categoryRepository.deleteById(id);
-                }
-                catch (Exception e){
+                } catch (Exception e) {
                     throw new Exception(e.getMessage());
-
                 }
+
+
             }
             else{
-                throw new EntityNotFoundException("you are not the owner of Restaurant");
+                throw new UserNotOwnerOfRestaurantException();
             }
         }
         else{
-            throw new EntityNotFoundException("Category not belong to Restaurant");
+            throw new CategoryNotInRestaurantException(id);
         }
+
+
 
 
     }

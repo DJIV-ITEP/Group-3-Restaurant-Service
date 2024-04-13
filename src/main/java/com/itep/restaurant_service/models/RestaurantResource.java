@@ -2,10 +2,10 @@ package com.itep.restaurant_service.models;
 
 import lombok.*;
 
-@NoArgsConstructor
+//@NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Setter
+//@Setter
 @Builder
 public class RestaurantResource {
     public long id;

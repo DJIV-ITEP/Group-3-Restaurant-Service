@@ -21,7 +21,7 @@ public class MenuEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     private String name;
 
     @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
@@ -31,8 +31,8 @@ public class MenuEntity {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "menu", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<ItemEntity> items;
 
-    public MenuEntity(String newMenu) {
-    }
+//    public MenuEntity(String newMenu) {
+//    }
 
 
 

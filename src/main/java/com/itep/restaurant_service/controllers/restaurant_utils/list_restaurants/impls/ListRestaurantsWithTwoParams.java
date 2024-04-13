@@ -24,9 +24,7 @@ public class ListRestaurantsWithTwoParams implements ListRestaurantsHandler {
         } else if (successor != null) {
             return successor.handleRequest(filtersMap, restaurantService);
         }
-        return new ResponseEntity<>(
-                Map.of("message","could not list the restaurants", "status",400)
-                , HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
 

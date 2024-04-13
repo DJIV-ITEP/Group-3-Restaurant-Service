@@ -40,7 +40,7 @@ public class AllRepositoriesInIT {
         category = categoryRepository.save(category);
         menu = new MenuEntity(1L, "m1", category, new ArrayList<>());
         menu = menuRepository.save(menu);
-        item = new ItemEntity(1L, "i1", "this is for testing", 250, menu);
+        item = new ItemEntity(1L, "i1", "this is for testing", 250,500, menu);
         item = menuItemRepository.save(item);
     }
 
