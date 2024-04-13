@@ -17,7 +17,7 @@
 #      postgres:
 #        image: postgres:latest
 #        env:
-#          POSTGRES_USER: postgres
+#          POSTGRES_USER: git
 #          POSTGRES_PASSWORD: postgres
 #          POSTGRES_DB: restaurant
 #        ports:
