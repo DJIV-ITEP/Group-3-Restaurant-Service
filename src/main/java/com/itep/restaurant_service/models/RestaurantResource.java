@@ -2,10 +2,10 @@ package com.itep.restaurant_service.models;
 
 import lombok.*;
 
-@NoArgsConstructor
+//@NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Setter
+//@Setter
 @Builder
 public class RestaurantResource {
     public long id;
@@ -15,7 +15,4 @@ public class RestaurantResource {
     public String status="offline";
     public String food;
     public String cuisine;
-//    Hide These information
-//    public String username;
-//    public String password;
 }

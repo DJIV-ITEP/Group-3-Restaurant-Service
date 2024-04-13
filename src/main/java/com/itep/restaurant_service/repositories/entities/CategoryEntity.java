@@ -9,27 +9,33 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "categories")
+@Table(name = "categories", uniqueConstraints={@UniqueConstraint(columnNames = {"name", "restaurant_id"})})
 public class CategoryEntity {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     private String name;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "restaurant_id")
-    @OnDelete(action = OnDeleteAction.CASCADE)
+
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
+    @JoinColumn(name = "restaurant_id", nullable = false)
     private RestaurantEntity restaurant;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MenuEntity> menus;
 
     public CategoryResource toCategoryResource() {
         return CategoryResource
                 .builder()
                 .id(id)
                 .name(name)
+                .restaurant(restaurant.getId())
                 .build();
     }
 }

@@ -1,7 +1,6 @@
 package com.itep.restaurant_service.repositories.entities;
 
 
-import com.itep.restaurant_service.models.DayResource;
 import com.itep.restaurant_service.models.ItemResource;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -13,18 +12,21 @@ import org.hibernate.annotations.OnDeleteAction;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "items")
+@Table(name = "items",uniqueConstraints={@UniqueConstraint(columnNames = {"name", "menu_id"})})
 public class ItemEntity {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     private String name;
-    @Column(name = "price")
+    @Column(name = "description")
+    private String description;
+    @Column(name = "price", nullable = false)
     private double price;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "menu_id")
-    @OnDelete(action = OnDeleteAction.CASCADE)
+    @Column(name = "quantity", nullable = false)
+    private double quantity;
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
+    @JoinColumn(name = "menu_id", nullable = false)
     private MenuEntity menu;
 
 
@@ -34,6 +36,9 @@ public class ItemEntity {
                 .id(id)
                 .name(name)
                 .price(price)
+                .description(description)
+                .quantity(quantity)
+                .menu(menu.getId())
                 .build();
     }
 
