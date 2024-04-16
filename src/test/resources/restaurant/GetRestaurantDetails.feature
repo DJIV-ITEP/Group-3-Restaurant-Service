@@ -6,7 +6,7 @@ Feature: testing create restaurant
 
   Scenario: Get exists restaurant details
     When I want to get restaurant details with restaurant ID 1
-    Then restaurant details are returned for the specific ID 1
+    Then restaurant details are returned for the specific ID 1 and its name is r1
 
   Scenario: Get not exists restaurant details
     When I want to get restaurant details with restaurant ID 10

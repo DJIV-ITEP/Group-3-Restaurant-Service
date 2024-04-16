@@ -7,7 +7,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @CucumberContextConfiguration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-@Import({WireMockServerConfiguration.class})
+//@Import({WireMockServerConfiguration.class})
 @AutoConfigureMockMvc
 @ActiveProfiles("dev")
 public class CucumberSpringGlue {
