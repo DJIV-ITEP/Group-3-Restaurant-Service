@@ -1,4 +1,4 @@
-package com.itep.restaurant_service.acceptance_tests;
+package com.itep.restaurant_service.acceptance_tests.restaurant;
 
 import io.cucumber.java.DataTableType;
 import io.cucumber.java.en.Then;

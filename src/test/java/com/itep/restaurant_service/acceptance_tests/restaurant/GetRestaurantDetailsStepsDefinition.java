@@ -1,4 +1,4 @@
-package com.itep.restaurant_service.acceptance_tests;
+package com.itep.restaurant_service.acceptance_tests.restaurant;
 
 import com.itep.restaurant_service.repositories.RestaurantRepository;
 import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
@@ -35,7 +35,7 @@ public class GetRestaurantDetailsStepsDefinition {
     }
     private ResponseEntity<Object> result;
     @Given("Available restaurants in database to test get restaurant details")
-    public void haveBooksInTheStore(DataTable table) {
+    public void availableRestaurants(DataTable table) {
         List<List<Object>> rows = table.asLists(Object.class);
         for (List<Object> columns: rows) {
             // pass header
@@ -63,10 +63,11 @@ public class GetRestaurantDetailsStepsDefinition {
     }
 
 
-    @Then("restaurant details are returned for the specific ID {long}")
-    public void restaurantDetailsAreFoundSuccessfully_CheckResponse(long restaurantId) {
+    @Then("restaurant details are returned for the specific ID {int} and its name is {word}")
+    public void restaurantDetailsAreFoundSuccessfully_CheckResponse(int restaurantId, String name) {
         Object body = result.getBody();
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        System.out.println(body);
         assertThat(body)
                 .hasFieldOrProperty("id")
                 .hasFieldOrProperty("name")
@@ -75,7 +76,7 @@ public class GetRestaurantDetailsStepsDefinition {
                 .hasFieldOrProperty("food")
                 .hasFieldOrProperty("cuisine")
                 .extracting("id", "name")
-                .containsExactly(1, "r1");
+                .containsExactly(restaurantId, name);
     }
     @Then("can not get restaurant details because restaurant not found")
     public void restaurantNotFound_CheckResponse() {

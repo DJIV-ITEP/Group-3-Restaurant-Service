@@ -1,4 +1,4 @@
-package com.itep.restaurant_service.acceptance_tests;
+package com.itep.restaurant_service.acceptance_tests.restaurant;
 
 import com.itep.restaurant_service.repositories.RestaurantRepository;
 import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
@@ -40,7 +40,7 @@ public class ListRestaurantsStepsDefinition {
     }
     private ResponseEntity<Object> result;
     @Given("Available restaurants in database to test list available restaurants")
-    public void haveBooksInTheStore(DataTable table) {
+    public void availableRestaurants(DataTable table) {
         List<List<Object>> rows = table.asLists(Object.class);
         for (List<Object> columns: rows) {
             // pass header
