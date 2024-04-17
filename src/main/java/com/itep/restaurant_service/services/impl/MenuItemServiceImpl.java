@@ -76,7 +76,7 @@ public class MenuItemServiceImpl implements MenuItemService {
         List<ItemResource> result = new ArrayList<>();;
         for (Integer itemsId : itemsIds) {
             try {
-                Optional<ItemEntity> itemEntityOptional = menuItemRepository.findById(Long.valueOf(itemsId));
+                Optional<ItemEntity> itemEntityOptional = menuItemRepository.findById(itemsId.longValue());
                 if (itemEntityOptional.isPresent()) {
                     ItemEntity itemEntity = itemEntityOptional.get();
                     result.add(itemEntity.toItemResource());
