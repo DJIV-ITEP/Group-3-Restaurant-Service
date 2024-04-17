@@ -20,15 +20,17 @@ import java.util.Objects;
 @Service
 public class OrderServiceImpl implements OrderService {
     final private RestaurantRepository restaurantRepository;
-    @Autowired
-    private AcceptOrderClient acceptOrderClient;
-    @Autowired
-    private GetOrderClient getOrderClient;
+//    @Autowired
+    private final AcceptOrderClient acceptOrderClient;
+//    @Autowired
+    private final GetOrderClient getOrderClient;
 
     @Autowired
-    public OrderServiceImpl(RestaurantRepository restaurantRepository) {
+    public OrderServiceImpl(RestaurantRepository restaurantRepository, AcceptOrderClient acceptOrderClient, GetOrderClient getOrderClient) {
         this.restaurantRepository = restaurantRepository;
 
+        this.acceptOrderClient = acceptOrderClient;
+        this.getOrderClient = getOrderClient;
     }
     // public void processOrder(long IdOrder) {
     // // محاكاة معالجة الطلب
