@@ -60,9 +60,9 @@ public class MenuItemController {
 
     }
     @PostMapping("/restaurants/item")
-    public ResponseEntity<Object> getItems(@RequestBody IntArrayReques request) throws Exception {
+    public ResponseEntity<Object> getItems(@RequestBody Integer[] itemsIds) throws Exception {
         try{
-            Integer[] itemsIds = request.getItemsIds();
+//            Integer[] itemsIds = request.getItemsIds();
             List<ItemResource> result = menuItemService.getItemsbyIds(itemsIds);
             return new ResponseEntity<>(
                     Map.of(
