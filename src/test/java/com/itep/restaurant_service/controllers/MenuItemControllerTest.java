@@ -199,12 +199,12 @@ public class MenuItemControllerTest {
         when(menuItemService.getItemsbyIds(itemsIds))
                 .thenReturn(result);
 
-        Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("itemsIds", Arrays.asList(itemsIds));
+//        Map<String, Object> requestBody = new HashMap<>();
+//        requestBody.put("itemsIds", Arrays.asList(itemsIds));
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
         ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
-        String requestJson=ow.writeValueAsString(requestBody);
+        String requestJson=ow.writeValueAsString(itemsIds);
 
 
         mockMvc.perform(MockMvcRequestBuilders.post("/restaurants/item")
@@ -231,12 +231,12 @@ public class MenuItemControllerTest {
         when(menuItemService.getItemsbyIds(itemsIds))
                 .thenReturn(result);
 
-        Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("itemsIds", Arrays.asList(itemsIds));
+//        Map<String, Object> requestBody = new HashMap<>();
+//        requestBody.put("itemsIds", Arrays.asList(itemsIds));
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
         ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
-        String requestJson=ow.writeValueAsString(requestBody);
+        String requestJson=ow.writeValueAsString(itemsIds);
         mockMvc.perform(MockMvcRequestBuilders.post("/restaurants/item")
                         .contentType(APPLICATION_JSON)
                         .content(requestJson).with(csrf()))
