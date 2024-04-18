@@ -1,15 +1,9 @@
 package com.itep.restaurant_service.component;
 
-import com.itep.restaurant_service.controllers.RestaurantController;
-import com.itep.restaurant_service.security.WebSecurityConfig;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -22,9 +16,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-@WebMvcTest(AcceptOrderClient.class)
 @ExtendWith(SpringExtension.class)
-@Import(WebSecurityConfig.class)
 public class AcceptOrderClientTest {
     @Mock
     private RestTemplate restTemplate;
@@ -33,13 +25,13 @@ public class AcceptOrderClientTest {
     private AcceptOrderClient acceptOrderClient;
 
     @Test
-    public void testAcceptOrder() {
+    void testAcceptOrder() {
         // Given
         String orderId = "123";
         Boolean status = true;
+        acceptOrderClient.baseUri = "http://example.com/";
         String uri = "http://example.com/rest-change-status/123?accept=true";
         ResponseEntity<String> expectedResponse = new ResponseEntity<>("Accepted", HttpStatus.OK);
-
         // When
         when(restTemplate.exchange(eq(uri), eq(HttpMethod.PUT), any(HttpEntity.class), eq(String.class)))
                 .thenReturn(expectedResponse);
@@ -56,6 +48,7 @@ public class AcceptOrderClientTest {
         // Given
         String orderId = "123";
         long statusId = 1;
+        acceptOrderClient.baseUri = "http://example.com/";
         String uri = "http://example.com/rest-change-status/123";
         ResponseEntity<String> expectedResponse = new ResponseEntity<>("Status Changed", HttpStatus.OK);
 

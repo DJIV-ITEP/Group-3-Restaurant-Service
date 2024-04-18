@@ -16,7 +16,7 @@ import java.util.Map;
 
 @Component()
 public class GetOrderClient {
-    private final String baseUri;
+    public String baseUri;
     private final RestTemplate restTemplate;
 
     public GetOrderClient(
