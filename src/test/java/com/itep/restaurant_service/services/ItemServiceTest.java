@@ -42,11 +42,40 @@ public class ItemServiceTest {
     RestaurantRepository restaurantRepository;
     @InjectMocks
     MenuItemServiceImpl itemService;
+    void givenNotFoundRestaurant() {
+        given(restaurantRepository.findById(1L))
+                .willReturn(Optional.empty());
+    }
+    RestaurantEntity givenFoundRestaurant() {
+        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
+        given(restaurantRepository.findById(1L))
+                .willReturn(Optional.of(restaurant1));
+        return restaurant1;
+    }
+    void givenNotFoundCategory() {
+        given(categoryRepository.findById(1L))
+                .willReturn(Optional.empty());
+    }
+    CategoryEntity givenFoundCategory(RestaurantEntity restaurant) {
+        CategoryEntity category = new CategoryEntity(1, "category", restaurant, new ArrayList<>());
+        given(categoryRepository.findById(1L))
+                .willReturn(Optional.of(category));
+        return category;
+    }
+    void givenNotFoundMenu() {
+        given(menuRepository.findById(1L))
+                .willReturn(Optional.empty());
+    }
+    MenuEntity givenFoundMenu(CategoryEntity category) {
+        MenuEntity menu = new MenuEntity(1, "menu", category, new ArrayList<>());
+        given(menuRepository.findById(1L))
+                .willReturn(Optional.of(menu));
+        return menu;
+    }
 
     @Test
     void testGetItems_RestaurantNotFound() throws Exception {
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.empty());
+        givenNotFoundRestaurant();
         Throwable exception = assertThrows(Exception.class, () -> {
             itemService.getItems(1L,1L, 1L);
         });
@@ -57,9 +86,7 @@ public class ItemServiceTest {
     }
     @Test
     void testGetItems_CategoryNotFound() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
+        givenFoundRestaurant();
         given(categoryRepository.findById(1L))
                 .willReturn(Optional.empty());
 
@@ -72,17 +99,9 @@ public class ItemServiceTest {
 
     }
     @Test
-    void testGetItems_MenuNotFound() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.of(category));
-
-        given(menuRepository.findById(1L))
-                .willReturn(Optional.empty());
-
+    void testGetItems_MenuNotFound() {
+        givenFoundCategory(givenFoundRestaurant());
+        givenNotFoundMenu();
         Throwable exception = assertThrows(Exception.class, () -> {
             itemService.getItems(1L,1L, 1L);
         });
@@ -93,18 +112,10 @@ public class ItemServiceTest {
     }
     @Test
     void testGetItems_CategoryNotInRestaurant() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
+        givenFoundRestaurant();
         RestaurantEntity restaurant2 = new RestaurantEntity(2, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("o", "o"), null);
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant2, new ArrayList<>());
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.of(category));
-        MenuEntity menu = new MenuEntity(1, "menu", category, new ArrayList<>());
-        given(menuRepository.findById(1L))
-                .willReturn(Optional.of(menu));
-        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,menu);
-        given(itemRepository.findById(menu.getId()))
+        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,givenFoundMenu(givenFoundCategory(restaurant2)));
+        given(itemRepository.findById(1L))
                 .willReturn(Optional.of(item));
 
         Throwable exception = assertThrows(Exception.class, () -> {
@@ -117,17 +128,10 @@ public class ItemServiceTest {
     }
     @Test
     void testGetItems_MenuNotInCategory() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.of(category));
+        var restaurant1 = givenFoundRestaurant();
+        givenFoundCategory(restaurant1);
         CategoryEntity category2 = new CategoryEntity(2, "category", restaurant1, new ArrayList<>());
-        MenuEntity menu = new MenuEntity(1, "menu", category2, new ArrayList<>());
-        given(menuRepository.findById(1L))
-                .willReturn(Optional.of(menu));
-
+        givenFoundMenu(category2);
         Throwable exception = assertThrows(Exception.class, () -> {
             itemService.getItems(1L,1L, 1L);
         });
@@ -138,34 +142,16 @@ public class ItemServiceTest {
     }
     @Test
     void testGetItems_Empty() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.of(category));
-        MenuEntity menu = new MenuEntity(1, "menu", category, new ArrayList<>());
-        given(menuRepository.findById(1L))
-                .willReturn(Optional.of(menu));
-
+        givenFoundMenu(givenFoundCategory(givenFoundRestaurant()));
         assertThat(itemService.getItems(1L,1L, 1L))
                 .hasSize(0);
     }
     @Test
     void testGetItems_NotEmpty() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.of(category));
-        MenuEntity menu = new MenuEntity(1, "menu", category, new ArrayList<>());
-        given(menuRepository.findById(1L))
-                .willReturn(Optional.of(menu));
-        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,menu);
-        given(itemRepository.findByMenuId(menu.getId()))
+        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,givenFoundMenu(givenFoundCategory(givenFoundRestaurant())));
+        given(itemRepository.findByMenuId(1))
                 .willReturn(List.of(item));
-        assertThat(itemService.getItems(restaurant1.getId(),category.getId(), menu.getId()))
+        assertThat(itemService.getItems(1,1, 1))
                 .hasSize(1)
                 .element(0)
                 .returns(1L, ItemResource::getId)
@@ -177,16 +163,7 @@ public class ItemServiceTest {
     }
     @Test
     void testGetItemsByID_NotEmpty() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.of(category));
-        MenuEntity menu = new MenuEntity(1, "menu", category, new ArrayList<>());
-        given(menuRepository.findById(1L))
-                .willReturn(Optional.of(menu));
-        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,menu);
+        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,givenFoundMenu(givenFoundCategory(givenFoundRestaurant())));
         given(itemRepository.findById(item.getId()))
                 .willReturn(Optional.of(item));
         assertThat(itemService.getItemsbyIds(List.of(1).toArray(Integer[]::new)))
@@ -201,9 +178,8 @@ public class ItemServiceTest {
     }
 
     @Test
-    void testGetItemDetail_RestaurantNotFound() throws Exception {
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.empty());
+    void testGetItemDetail_RestaurantNotFound() {
+        givenNotFoundRestaurant();
         Throwable exception = assertThrows(Exception.class, () -> {
             itemService.getItemsDetails(1L,1L,1L, 1L);
         });
@@ -212,10 +188,8 @@ public class ItemServiceTest {
                 .isInstanceOf(RestaurantNotFoundException.class);
     }
     @Test
-    void testGetItemDetail_CategoryNotFound() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
+    void testGetItemDetail_CategoryNotFound() {
+        givenFoundRestaurant();
         given(categoryRepository.findById(1L))
                 .willReturn(Optional.empty());
 
@@ -227,17 +201,9 @@ public class ItemServiceTest {
                 .isInstanceOf(CategoryNotInRestaurantException.class);
     }
     @Test
-    void testGetItemDetail_MenuNotFound() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.of(category));
-
-        given(menuRepository.findById(1L))
-                .willReturn(Optional.empty());
-
+    void testGetItemDetail_MenuNotFound() {
+        givenFoundCategory(givenFoundRestaurant());
+        givenNotFoundMenu();
         Throwable exception = assertThrows(Exception.class, () -> {
             itemService.getItemsDetails(1L,1L,1L, 1L);
         });
@@ -248,18 +214,10 @@ public class ItemServiceTest {
     }
     @Test
     void testGetItemDetail_CategoryNotInRestaurant() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
+        givenFoundRestaurant();
         RestaurantEntity restaurant2 = new RestaurantEntity(2, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("o", "o"), null);
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant2, new ArrayList<>());
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.of(category));
-        MenuEntity menu = new MenuEntity(1, "menu", category, new ArrayList<>());
-        given(menuRepository.findById(1L))
-                .willReturn(Optional.of(menu));
-        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,menu);
-        given(itemRepository.findById(menu.getId()))
+        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,givenFoundMenu(givenFoundCategory(restaurant2)));
+        given(itemRepository.findById(1L))
                 .willReturn(Optional.of(item));
 
         Throwable exception = assertThrows(Exception.class, () -> {
@@ -271,19 +229,12 @@ public class ItemServiceTest {
 
     }
     @Test
-    void testGetItemDetail_MenuNotInCategory() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.of(category));
+    void testGetItemDetail_MenuNotInCategory() {
+        RestaurantEntity restaurant1 = givenFoundRestaurant();
+        givenFoundCategory(restaurant1);
         CategoryEntity category2 = new CategoryEntity(2, "category", restaurant1, new ArrayList<>());
-        MenuEntity menu = new MenuEntity(1, "menu", category2, new ArrayList<>());
-        given(menuRepository.findById(1L))
-                .willReturn(Optional.of(menu));
-        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,menu);
-        given(itemRepository.findById(menu.getId()))
+        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,givenFoundMenu(category2));
+        given(itemRepository.findById(1L))
                 .willReturn(Optional.of(item));
 
         Throwable exception = assertThrows(Exception.class, () -> {
@@ -295,16 +246,8 @@ public class ItemServiceTest {
 
     }
     @Test
-    void testGetItemDetail_ItemNotFound() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.of(category));
-        MenuEntity menu = new MenuEntity(1, "menu", category, new ArrayList<>());
-        given(menuRepository.findById(1L))
-                .willReturn(Optional.of(menu));
+    void testGetItemDetail_ItemNotFound() {
+        givenFoundMenu(givenFoundCategory(givenFoundRestaurant()));
         given(itemRepository.findById(1L))
                 .willReturn(Optional.empty());
 
@@ -317,19 +260,10 @@ public class ItemServiceTest {
     }
     @Test
     void testGetItemDetail_Found() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.of(category));
-        MenuEntity menu = new MenuEntity(1, "menu", category, new ArrayList<>());
-        given(menuRepository.findById(1L))
-                .willReturn(Optional.of(menu));
-        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,menu);
+        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,givenFoundMenu(givenFoundCategory(givenFoundRestaurant())));
         given(itemRepository.findById(1L))
                 .willReturn(Optional.of(item));
-        assertThat(itemService.getItemsDetails(restaurant1.getId(),category.getId(), menu.getId(), item.getId()))
+        assertThat(itemService.getItemsDetails(1,1, 1, 1))
                 .returns(1L, ItemResource::getId)
                 .returns("item", ItemResource::getName)
                 .returns("description", ItemResource::getDescription)
@@ -340,9 +274,8 @@ public class ItemServiceTest {
 
 
     @Test
-    void testAddItem_RestaurantNotFound() throws Exception {
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.empty());
+    void testAddItem_RestaurantNotFound() {
+        givenNotFoundRestaurant();
         ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,null);
         Throwable exception = assertThrows(Exception.class, () -> {
             itemService.createItem(1L,1L,1L, item);
@@ -353,12 +286,9 @@ public class ItemServiceTest {
     }
 
     @Test
-    void testAddItem_CategoryNotFound() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.empty());
+    void testAddItem_CategoryNotFound() {
+        givenFoundRestaurant();
+        givenNotFoundCategory();
         ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,null);
         Throwable exception = assertThrows(Exception.class, () -> {
             itemService.createItem(1L,1L,1L, item);
@@ -368,15 +298,9 @@ public class ItemServiceTest {
                 .isInstanceOf(CategoryNotInRestaurantException.class);
     }
     @Test
-    void testAddItem_MenuNotFound() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.of(category));
-        given(menuRepository.findById(1L))
-                .willReturn(Optional.empty());
+    void testAddItem_MenuNotFound() {
+        givenFoundCategory(givenFoundRestaurant());
+        givenNotFoundMenu();
         ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,null);
         Throwable exception = assertThrows(Exception.class, () -> {
             itemService.createItem(1L,1L,1L, item);
@@ -388,16 +312,7 @@ public class ItemServiceTest {
     @Test
     @WithMockUser(username = "owner", password = "owner")
     void testAddItem_Success() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.of(category));
-        MenuEntity menu = new MenuEntity(1, "menu", category, new ArrayList<>());
-        given(menuRepository.findById(1L))
-                .willReturn(Optional.of(menu));
-        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,menu);
+        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,givenFoundMenu(givenFoundCategory(givenFoundRestaurant())));
         given(itemRepository.save(item))
                 .willReturn(item);
         assertThat(itemService.createItem(1L,1L,1L, item))
@@ -410,17 +325,8 @@ public class ItemServiceTest {
     }
     @Test
     @WithMockUser(username = "owner", password = "owner")
-    void testAddItem_Duplicate() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.of(category));
-        MenuEntity menu = new MenuEntity(1, "menu", category, new ArrayList<>());
-        given(menuRepository.findById(1L))
-                .willReturn(Optional.of(menu));
-        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,menu);
+    void testAddItem_Duplicate() {
+        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,givenFoundMenu(givenFoundCategory(givenFoundRestaurant())));
         given(itemRepository.save(item))
                 .willThrow(new RuntimeException("duplicate key value violates unique constraint"));
         Throwable exception = assertThrows(Exception.class, () -> {
@@ -432,17 +338,8 @@ public class ItemServiceTest {
     }
     @Test
     @WithMockUser(username = "owner", password = "owner")
-    void testAddItem_MissingValues() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.of(category));
-        MenuEntity menu = new MenuEntity(1, "menu", category, new ArrayList<>());
-        given(menuRepository.findById(1L))
-                .willReturn(Optional.of(menu));
-        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,menu);
+    void testAddItem_MissingValues() {
+        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,givenFoundMenu(givenFoundCategory(givenFoundRestaurant())));
         given(itemRepository.save(item))
                 .willThrow(new RuntimeException("not-null property references a null"));
         Throwable exception = assertThrows(Exception.class, () -> {
@@ -453,17 +350,8 @@ public class ItemServiceTest {
     }
     @Test
     @WithMockUser(username = "o1", password = "o1")
-    void testAddItem_NotOwner() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.of(category));
-        MenuEntity menu = new MenuEntity(1, "menu", category, new ArrayList<>());
-        given(menuRepository.findById(1L))
-                .willReturn(Optional.of(menu));
-        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,menu);
+    void testAddItem_NotOwner() {
+        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,givenFoundMenu(givenFoundCategory(givenFoundRestaurant())));
         given(itemRepository.save(item))
                 .willThrow(new UserNotOwnerOfRestaurantException());
         Throwable exception = assertThrows(Exception.class, () -> {
@@ -476,9 +364,8 @@ public class ItemServiceTest {
 
 
     @Test
-    void testUpdateItem_RestaurantNotFound() throws Exception {
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.empty());
+    void testUpdateItem_RestaurantNotFound() {
+        givenNotFoundRestaurant();
         ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,null);
         Throwable exception = assertThrows(Exception.class, () -> {
             itemService.updateItem(1L,1L,1L, 1L, item);
@@ -488,12 +375,9 @@ public class ItemServiceTest {
                 .isInstanceOf(RestaurantNotFoundException.class);
     }
     @Test
-    void testUpdateItem_CategoryNotFound() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.empty());
+    void testUpdateItem_CategoryNotFound() {
+        givenFoundRestaurant();
+        givenNotFoundCategory();
         ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,null);
         Throwable exception = assertThrows(Exception.class, () -> {
             itemService.updateItem(1L,1L,1L, 1L, item);
@@ -503,15 +387,9 @@ public class ItemServiceTest {
                 .isInstanceOf(CategoryNotInRestaurantException.class);
     }
     @Test
-    void testUpdateItem_MenuNotFound() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.of(category));
-        given(menuRepository.findById(1L))
-                .willReturn(Optional.empty());
+    void testUpdateItem_MenuNotFound() {
+        givenFoundCategory(givenFoundRestaurant());
+        givenNotFoundMenu();
         ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,null);
         Throwable exception = assertThrows(Exception.class, () -> {
             itemService.updateItem(1L,1L,1L, 1L, item);
@@ -523,16 +401,7 @@ public class ItemServiceTest {
     @Test
     @WithMockUser(username = "owner", password = "owner")
     void testUpdateItem_Success() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.of(category));
-        MenuEntity menu = new MenuEntity(1, "menu", category, new ArrayList<>());
-        given(menuRepository.findById(1L))
-                .willReturn(Optional.of(menu));
-        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,menu);
+        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,givenFoundMenu(givenFoundCategory(givenFoundRestaurant())));
         given(itemRepository.findById(1L))
                 .willReturn(Optional.of(item));
         given(itemRepository.save(item))
@@ -548,16 +417,7 @@ public class ItemServiceTest {
     @Test
     @WithMockUser(username = "owner", password = "owner")
     void testUpdateItem_Duplicate() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.of(category));
-        MenuEntity menu = new MenuEntity(1, "menu", category, new ArrayList<>());
-        given(menuRepository.findById(1L))
-                .willReturn(Optional.of(menu));
-        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,menu);
+        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,givenFoundMenu(givenFoundCategory(givenFoundRestaurant())));
         given(itemRepository.findById(1L))
                 .willReturn(Optional.of(item));
         given(itemRepository.save(item))
@@ -572,16 +432,7 @@ public class ItemServiceTest {
     @Test
     @WithMockUser(username = "owner", password = "owner")
     void testUpdateItem_NullName() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.of(category));
-        MenuEntity menu = new MenuEntity(1, "menu", category, new ArrayList<>());
-        given(menuRepository.findById(1L))
-                .willReturn(Optional.of(menu));
-        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,menu);
+        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,givenFoundMenu(givenFoundCategory(givenFoundRestaurant())));
         given(itemRepository.findById(1L))
                 .willReturn(Optional.of(item));
         given(itemRepository.save(item))
@@ -595,17 +446,8 @@ public class ItemServiceTest {
     }
     @Test
     @WithMockUser(username = "o1", password = "o1")
-    void testUpdateItem_NotOwner() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.of(category));
-        MenuEntity menu = new MenuEntity(1, "menu", category, new ArrayList<>());
-        given(menuRepository.findById(1L))
-                .willReturn(Optional.of(menu));
-        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,menu);
+    void testUpdateItem_NotOwner() {
+        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,givenFoundMenu(givenFoundCategory(givenFoundRestaurant())));
         given(itemRepository.findById(1L))
                 .willReturn(Optional.of(item));
         given(itemRepository.save(item))
@@ -620,9 +462,8 @@ public class ItemServiceTest {
 
 
     @Test
-    void testDeleteItem_RestaurantNotFound() throws Exception {
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.empty());
+    void testDeleteItem_RestaurantNotFound() {
+        givenNotFoundRestaurant();
         Throwable exception = assertThrows(Exception.class, () -> {
             itemService.deleteItem(1L,1L,1L, 1L);
         });
@@ -631,12 +472,9 @@ public class ItemServiceTest {
                 .isInstanceOf(RestaurantNotFoundException.class);
     }
     @Test
-    void testDeleteItem_CategoryNotFound() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.empty());
+    void testDeleteItem_CategoryNotFound() {
+        givenFoundRestaurant();
+        givenNotFoundCategory();
         Throwable exception = assertThrows(Exception.class, () -> {
             itemService.deleteItem(1L,1L,1L, 1L);
         });
@@ -645,15 +483,9 @@ public class ItemServiceTest {
                 .isInstanceOf(CategoryNotInRestaurantException.class);
     }
     @Test
-    void testDeleteItem_MenuNotFound() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.of(category));
-        given(menuRepository.findById(1L))
-                .willReturn(Optional.empty());
+    void testDeleteItem_MenuNotFound() {
+        givenFoundCategory(givenFoundRestaurant());
+        givenNotFoundMenu();
         Throwable exception = assertThrows(Exception.class, () -> {
             itemService.deleteItem(1L,1L,1L, 1L);
         });
@@ -662,16 +494,8 @@ public class ItemServiceTest {
                 .isInstanceOf(MenuNotFoundException.class);
     }
     @Test
-    void testDeleteItem_ItemNotFound() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.of(category));
-        MenuEntity menu = new MenuEntity(1, "menu", category, new ArrayList<>());
-        given(menuRepository.findById(1L))
-                .willReturn(Optional.of(menu));
+    void testDeleteItem_ItemNotFound() {
+        givenFoundMenu(givenFoundCategory(givenFoundRestaurant()));
         given(itemRepository.findById(1L))
                 .willReturn(Optional.empty());
         Throwable exception = assertThrows(Exception.class, () -> {
@@ -684,16 +508,7 @@ public class ItemServiceTest {
     @Test
     @WithMockUser(username = "owner", password = "owner")
     void testDeleteItem_Success() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.of(category));
-        MenuEntity menu = new MenuEntity(1, "menu", category, new ArrayList<>());
-        given(menuRepository.findById(1L))
-                .willReturn(Optional.of(menu));
-        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,menu);
+        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,givenFoundMenu(givenFoundCategory(givenFoundRestaurant())));
         given(itemRepository.findById(1L))
                 .willReturn(Optional.of(item));
         doNothing()
@@ -703,16 +518,7 @@ public class ItemServiceTest {
     @Test
     @WithMockUser(username = "o1", password = "o1")
     void testDeleteItem_NotOwner() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
-        given(categoryRepository.findById(1L))
-                .willReturn(Optional.of(category));
-        MenuEntity menu = new MenuEntity(1, "menu", category, new ArrayList<>());
-        given(menuRepository.findById(1L))
-                .willReturn(Optional.of(menu));
-        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,menu);
+        ItemEntity item = new ItemEntity(1, "item", "description", 23.0,1.2,givenFoundMenu(givenFoundCategory(givenFoundRestaurant())));
         given(itemRepository.findById(1L))
                 .willReturn(Optional.of(item));
         doThrow(new UserNotOwnerOfRestaurantException())

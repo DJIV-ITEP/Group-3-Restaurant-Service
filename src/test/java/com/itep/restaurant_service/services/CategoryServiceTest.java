@@ -3,12 +3,10 @@ package com.itep.restaurant_service.services;
 import com.itep.restaurant_service.models.CategoryResource;
 import com.itep.restaurant_service.repositories.CategoryRepository;
 import com.itep.restaurant_service.repositories.RestaurantRepository;
-import com.itep.restaurant_service.repositories.UserRepository;
 import com.itep.restaurant_service.repositories.entities.CategoryEntity;
 import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
 import com.itep.restaurant_service.repositories.entities.UserEntity;
 import com.itep.restaurant_service.services.impl.CategoryServiceImpl;
-import com.itep.restaurant_service.services.impl.RestaurantServiceImpl;
 import com.itep.restaurant_service.services.impl.errorsHandels.CategoryNotInRestaurantException;
 import com.itep.restaurant_service.services.impl.errorsHandels.RestaurantNotFoundException;
 import com.itep.restaurant_service.services.impl.errorsHandels.UserNotOwnerOfRestaurantException;
@@ -16,8 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -42,33 +38,38 @@ public class CategoryServiceTest {
     RestaurantRepository restaurantRepository;
     @InjectMocks
     CategoryServiceImpl categoryService;
-
-    @Test
-    void testGetCategories_RestaurantNotFound() throws Exception {
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.empty());
-        Throwable exception = assertThrows(Exception.class, () -> {
-            categoryService.getCategory(1L);
-        });
-
+    void assertEmptyRestaurant(Throwable exception) {
         assertThat(exception)
                 .isInstanceOf(RestaurantNotFoundException.class);
-
     }
-    @Test
-    void testGetCategories_Empty() throws Exception {
+
+    void givenNotFoundRestaurant() {
+        given(restaurantRepository.findById(1L))
+                .willReturn(Optional.empty());
+    }
+    RestaurantEntity givenFoundRestaurant() {
         RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
         given(restaurantRepository.findById(1L))
                 .willReturn(Optional.of(restaurant1));
+        return restaurant1;
+    }
+    @Test
+    void testGetCategories_RestaurantNotFound() {
+        givenNotFoundRestaurant();
+        Throwable exception = assertThrows(Exception.class, () -> {
+            categoryService.getCategory(1L);
+        });
+        assertEmptyRestaurant(exception);
+    }
+    @Test
+    void testGetCategories_Empty() throws Exception {
+        givenFoundRestaurant();
         assertThat(categoryService.getCategory(1L))
                 .hasSize(0);
     }
     @Test
     void testGetMenus_NotEmpty() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
+        CategoryEntity category = new CategoryEntity(1, "category", givenFoundRestaurant(), new ArrayList<>());
         given(categoryRepository.findByRestaurantId(1L))
                 .willReturn(List.of(category));
         assertThat(categoryService.getCategory(1L))
@@ -80,21 +81,16 @@ public class CategoryServiceTest {
     }
 
     @Test
-    void testGetCategoryDetail_RestaurantNotFound() throws Exception {
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.empty());
+    void testGetCategoryDetail_RestaurantNotFound() {
+        givenNotFoundRestaurant();
         Throwable exception = assertThrows(Exception.class, () -> {
             categoryService.getCategoryDetails(1L, 1L);
         });
-
-        assertThat(exception)
-                .isInstanceOf(RestaurantNotFoundException.class);
+        assertEmptyRestaurant(exception);
     }
     @Test
-    void testGetCategoryDetail_CategoryNotFound() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
+    void testGetCategoryDetail_CategoryNotFound() {
+        givenFoundRestaurant();
         given(categoryRepository.findById(1L))
                 .willReturn(Optional.empty());
 
@@ -107,10 +103,7 @@ public class CategoryServiceTest {
     }
     @Test
     void testGetCategoryDetail_Found() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
+        CategoryEntity category = new CategoryEntity(1, "category", givenFoundRestaurant(), new ArrayList<>());
         given(categoryRepository.findById(1L))
                 .willReturn(Optional.of(category));
         assertThat(categoryService.getCategoryDetails(1L,1L))
@@ -121,24 +114,18 @@ public class CategoryServiceTest {
 
 
     @Test
-    void testAddCategory_RestaurantNotFound() throws Exception {
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.empty());
+    void testAddCategory_RestaurantNotFound() {
+        givenNotFoundRestaurant();
         CategoryEntity category = new CategoryEntity(1, "category", null, new ArrayList<>());
         Throwable exception = assertThrows(Exception.class, () -> {
             categoryService.createCategory(1L, category);
         });
-
-        assertThat(exception)
-                .isInstanceOf(RestaurantNotFoundException.class);
+        assertEmptyRestaurant(exception);
     }
     @Test
     @WithMockUser(username = "owner", password = "owner")
     void testAddCategory_Success() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), new ArrayList<>());
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
+        CategoryEntity category = new CategoryEntity(1, "category", givenFoundRestaurant(), new ArrayList<>());
         given(categoryRepository.save(category))
                 .willReturn(category);
         assertThat(categoryService.createCategory(1L, category))
@@ -148,11 +135,8 @@ public class CategoryServiceTest {
     }
     @Test
     @WithMockUser(username = "owner", password = "owner")
-    void testAddCategory_Duplicate() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
+    void testAddCategory_Duplicate() {
+        CategoryEntity category = new CategoryEntity(1, "category", givenFoundRestaurant(), new ArrayList<>());
         given(categoryRepository.save(category))
                 .willThrow(new RuntimeException("duplicate key value violates unique constraint"));
         Throwable exception = assertThrows(Exception.class, () -> {
@@ -164,12 +148,8 @@ public class CategoryServiceTest {
     }
     @Test
     @WithMockUser(username = "owner", password = "owner")
-    void testAddCategory_MissingValues() throws Exception {
-
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
+    void testAddCategory_MissingValues() {
+        CategoryEntity category = new CategoryEntity(1, "category", givenFoundRestaurant(), new ArrayList<>());
         given(categoryRepository.save(category))
                 .willThrow(new RuntimeException("not-null property references a null"));
         Throwable exception = assertThrows(Exception.class, () -> {
@@ -180,12 +160,8 @@ public class CategoryServiceTest {
     }
     @Test
     @WithMockUser(username = "o1", password = "o1")
-    void testAddCategory_NotOwner() throws Exception {
-
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
+    void testAddCategory_NotOwner() {
+        CategoryEntity category = new CategoryEntity(1, "category", givenFoundRestaurant(), new ArrayList<>());
         given(categoryRepository.save(category))
                 .willThrow(new UserNotOwnerOfRestaurantException());
         Throwable exception = assertThrows(Exception.class, () -> {
@@ -198,24 +174,18 @@ public class CategoryServiceTest {
 
 
     @Test
-    void testUpdateCategory_RestaurantNotFound() throws Exception {
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.empty());
+    void testUpdateCategory_RestaurantNotFound() {
+        givenNotFoundRestaurant();
         CategoryEntity category = new CategoryEntity(1, "category", null, new ArrayList<>());
         Throwable exception = assertThrows(Exception.class, () -> {
             categoryService.updateCategory(1L, 1L, category);
         });
-
-        assertThat(exception)
-                .isInstanceOf(RestaurantNotFoundException.class);
+        assertEmptyRestaurant(exception);
     }
     @Test
     @WithMockUser(username = "owner", password = "owner")
     void testUpdateCategory_Success() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), new ArrayList<>());
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
+        CategoryEntity category = new CategoryEntity(1, "category", givenFoundRestaurant(), new ArrayList<>());
         given(categoryRepository.findById(1L))
                 .willReturn(Optional.of(category));
         given(categoryRepository.save(category))
@@ -227,11 +197,8 @@ public class CategoryServiceTest {
     }
     @Test
     @WithMockUser(username = "owner", password = "owner")
-    void testUpdateCategory_Duplicate() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
+    void testUpdateCategory_Duplicate() {
+        CategoryEntity category = new CategoryEntity(1, "category", givenFoundRestaurant(), new ArrayList<>());
         given(categoryRepository.findById(1L))
                 .willReturn(Optional.of(category));
         given(categoryRepository.save(category))
@@ -245,11 +212,8 @@ public class CategoryServiceTest {
     }
     @Test
     @WithMockUser(username = "owner", password = "owner")
-    void testUpdateCategory_NullName() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "", restaurant1, new ArrayList<>());
+    void testUpdateCategory_NullName() {
+        CategoryEntity category = new CategoryEntity(1, "", givenFoundRestaurant(), new ArrayList<>());
         given(categoryRepository.findById(1L))
                 .willReturn(Optional.of(category));
         given(categoryRepository.save(category))
@@ -263,12 +227,8 @@ public class CategoryServiceTest {
     }
     @Test
     @WithMockUser(username = "o1", password = "o1")
-    void testUpdateCategory_NotOwner() throws Exception {
-
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
+    void testUpdateCategory_NotOwner() {
+        CategoryEntity category = new CategoryEntity(1, "category", givenFoundRestaurant(), new ArrayList<>());
         given(categoryRepository.findById(1L))
                 .willReturn(Optional.of(category));
         given(categoryRepository.save(category))
@@ -283,23 +243,17 @@ public class CategoryServiceTest {
 
 
     @Test
-    void testDeleteCategory_RestaurantNotFound() throws Exception {
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.empty());
+    void testDeleteCategory_RestaurantNotFound() {
+        givenNotFoundRestaurant();
         Throwable exception = assertThrows(Exception.class, () -> {
             categoryService.deleteCategory(1L, 1L);
         });
-
-        assertThat(exception)
-                .isInstanceOf(RestaurantNotFoundException.class);
+        assertEmptyRestaurant(exception);
     }
     @Test
     @WithMockUser(username = "owner", password = "owner")
     void testDeleteCategory_Success() throws Exception {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), new ArrayList<>());
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
+        CategoryEntity category = new CategoryEntity(1, "category", givenFoundRestaurant(), new ArrayList<>());
         given(categoryRepository.findById(1L))
                 .willReturn(Optional.of(category));
         doNothing()
@@ -308,12 +262,8 @@ public class CategoryServiceTest {
     }
     @Test
     @WithMockUser(username = "o1", password = "o1")
-    void testDeleteCategory_NotOwner() throws Exception {
-
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        given(restaurantRepository.findById(1L))
-                .willReturn(Optional.of(restaurant1));
-        CategoryEntity category = new CategoryEntity(1, "category", restaurant1, new ArrayList<>());
+    void testDeleteCategory_NotOwner() {
+        CategoryEntity category = new CategoryEntity(1, "category", givenFoundRestaurant(), new ArrayList<>());
         given(categoryRepository.findById(1L))
                 .willReturn(Optional.of(category));
         doThrow(new UserNotOwnerOfRestaurantException())

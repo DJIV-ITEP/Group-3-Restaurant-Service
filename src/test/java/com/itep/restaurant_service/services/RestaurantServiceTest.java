@@ -1,5 +1,6 @@
 package com.itep.restaurant_service.services;
 
+import com.itep.restaurant_service.models.RestaurantResource;
 import com.itep.restaurant_service.repositories.RestaurantRepository;
 import com.itep.restaurant_service.repositories.UserRepository;
 import com.itep.restaurant_service.repositories.entities.RestaurantEntity;
@@ -31,8 +32,22 @@ public class RestaurantServiceTest {
     @InjectMocks
     RestaurantServiceImpl restaurantService;
 
+    void assertAvailableRestaurants(List<RestaurantResource> restaurantResources, int size){
+        assertThat(restaurantResources)
+                .hasSize(size)
+                .element(0)
+                .hasFieldOrProperty("id")
+                .hasFieldOrProperty("name")
+                .hasFieldOrProperty("address")
+                .hasFieldOrProperty("location")
+                .hasFieldOrProperty("status")
+                .hasFieldOrProperty("food")
+                .hasFieldOrProperty("cuisine");
+
+    }
+
     @Test
-    void testGetAvailableRestaurants_Empty() throws Exception {
+    void testGetAvailableRestaurants_Empty() {
         given(restaurantRepository.findByStatus("online"))
                 .willReturn(List.of());
 
@@ -40,83 +55,35 @@ public class RestaurantServiceTest {
                 .hasSize(0);
     }
     @Test
-    void testGetAvailableRestaurants_NotEmpty() throws Exception {
+    void testGetAvailableRestaurants_NotEmpty() {
         RestaurantEntity restaurant = new RestaurantEntity(1, "name", "address", "location", "online", "food", "cuisine", new UserEntity("owner", "owner"), null);
         given(restaurantRepository.findByStatus("online"))
                 .willReturn(List.of(restaurant));
-        assertThat(restaurantService.getAvailableRestaurants())
-                .hasSize(1)
-                .element(0)
-                .hasFieldOrProperty("id")
-                .hasFieldOrProperty("name")
-                .hasFieldOrProperty("address")
-                .hasFieldOrProperty("location")
-                .hasFieldOrProperty("status")
-                .hasFieldOrProperty("food")
-                .hasFieldOrProperty("cuisine");
-
+        assertAvailableRestaurants(restaurantService.getAvailableRestaurants(),1);
     }
     @Test
-    void testGetAvailableFilteredRestaurants_ByFoodAndCuisine() throws Exception {
+    void testGetAvailableFilteredRestaurants_ByFoodAndCuisine() {
         RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        RestaurantEntity restaurant2 = new RestaurantEntity(2, "name", "address", "location", "status", "Vegan", "Yemeni",new UserEntity("owner", "owner"), null);
-        RestaurantEntity restaurant3 = new RestaurantEntity(3, "name", "address", "location", "status", "Seafood", "Egyptian",new UserEntity("owner", "owner"), null);
-        RestaurantEntity restaurant4 = new RestaurantEntity(4, "name", "address", "location", "status", "Vegan", "Egyptian",new UserEntity("owner", "owner"), null);
         given(restaurantRepository.findByFoodAndCuisineAndStatus("Seafood","Yemeni", "online"))
                 .willReturn(List.of(restaurant1));
-
-        assertThat(restaurantService.getAvailableFilteredRestaurantsByFoodAndCuisine("Seafood","Yemeni"))
-                .hasSize(1)
-                .element(0)
-                .hasFieldOrProperty("id")
-                .hasFieldOrProperty("name")
-                .hasFieldOrProperty("address")
-                .hasFieldOrProperty("location")
-                .hasFieldOrProperty("status")
-                .hasFieldOrProperty("food")
-                .hasFieldOrProperty("cuisine");
+        assertAvailableRestaurants(restaurantService.getAvailableFilteredRestaurantsByFoodAndCuisine("Seafood","Yemeni"),1);
 
     }
     @Test
-    void testGetAvailableFilteredRestaurants_ByFood() throws Exception {
+    void testGetAvailableFilteredRestaurants_ByFood() {
         RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
-        RestaurantEntity restaurant2 = new RestaurantEntity(2, "name", "address", "location", "status", "Vegan", "Yemeni",new UserEntity("owner", "owner"), null);
         RestaurantEntity restaurant3 = new RestaurantEntity(3, "name", "address", "location", "status", "Seafood", "Egyptian",new UserEntity("owner", "owner"), null);
-        RestaurantEntity restaurant4 = new RestaurantEntity(4, "name", "address", "location", "status", "Vegan", "Egyptian",new UserEntity("owner", "owner"), null);
         given(restaurantRepository.findByFoodAndStatus("Seafood", "online"))
                 .willReturn(List.of(restaurant1, restaurant3));
-
-        assertThat(restaurantService.getAvailableFilteredRestaurantsByFood("Seafood"))
-                .hasSize(2)
-                .element(0)
-                .hasFieldOrProperty("id")
-                .hasFieldOrProperty("name")
-                .hasFieldOrProperty("address")
-                .hasFieldOrProperty("location")
-                .hasFieldOrProperty("status")
-                .hasFieldOrProperty("food")
-                .hasFieldOrProperty("cuisine");
-
+        assertAvailableRestaurants(restaurantService.getAvailableFilteredRestaurantsByFood("Seafood"),2);
     }
     @Test
-    void testGetAvailableFilteredRestaurants_ByCuisine() throws Exception {
+    void testGetAvailableFilteredRestaurants_ByCuisine() {
         RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
         RestaurantEntity restaurant2 = new RestaurantEntity(2, "name", "address", "location", "status", "Vegan", "Yemeni",new UserEntity("owner", "owner"), null);
-        RestaurantEntity restaurant3 = new RestaurantEntity(3, "name", "address", "location", "status", "Seafood", "Egyptian",new UserEntity("owner", "owner"), null);
-        RestaurantEntity restaurant4 = new RestaurantEntity(4, "name", "address", "location", "status", "Vegan", "Egyptian",new UserEntity("owner", "owner"), null);
         given(restaurantRepository.findByCuisineAndStatus("Yemeni", "online"))
                 .willReturn(List.of(restaurant1, restaurant2));
-
-        assertThat(restaurantService.getAvailableFilteredRestaurantsByCuisine("Yemeni"))
-                .hasSize(2)
-                .element(0)
-                .hasFieldOrProperty("id")
-                .hasFieldOrProperty("name")
-                .hasFieldOrProperty("address")
-                .hasFieldOrProperty("location")
-                .hasFieldOrProperty("status")
-                .hasFieldOrProperty("food")
-                .hasFieldOrProperty("cuisine");
+        assertAvailableRestaurants(restaurantService.getAvailableFilteredRestaurantsByCuisine("Yemeni"),2);
 
     }
     @Test
@@ -134,7 +101,7 @@ public class RestaurantServiceTest {
                 .hasFieldOrProperty("cuisine");
     }
     @Test
-    void testCreateRestaurant_Duplicate() throws Exception {
+    void testCreateRestaurant_Duplicate() {
         RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
         restaurantRepository.save(restaurant1);
         given(restaurantRepository.save(restaurant1))
@@ -151,7 +118,7 @@ public class RestaurantServiceTest {
 
     }
     @Test
-    void testCreateRestaurant_MissingValues() throws Exception {
+    void testCreateRestaurant_MissingValues() {
         RestaurantEntity restaurant2 = new RestaurantEntity(2, null, "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
         restaurantRepository.save(restaurant2);
         given(restaurantRepository.save(restaurant2))
@@ -164,7 +131,7 @@ public class RestaurantServiceTest {
     }
 
     @Test
-    void testGetRestaurantDetail_NotFound() throws Exception {
+    void testGetRestaurantDetail_NotFound() {
         given(restaurantRepository.findById(1L))
                 .willReturn(Optional.empty());
 
@@ -172,7 +139,7 @@ public class RestaurantServiceTest {
                 .isEmpty();
     }
     @Test
-    void testGetRestaurantDetail_Found() throws Exception {
+    void testGetRestaurantDetail_Found() {
         RestaurantEntity restaurant2 = new RestaurantEntity(2, null, "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
 
         given(restaurantRepository.findById(1L))
@@ -182,7 +149,7 @@ public class RestaurantServiceTest {
                 .isNotEmpty();
     }
     @Test
-    void testGetRestaurantEntity_NotFound() throws Exception {
+    void testGetRestaurantEntity_NotFound() {
         given(restaurantRepository.findById(1L))
                 .willReturn(Optional.empty());
 
@@ -190,7 +157,7 @@ public class RestaurantServiceTest {
                 .isEmpty();
     }
     @Test
-    void testGetRestaurantEntity_Found() throws Exception {
+    void testGetRestaurantEntity_Found() {
         RestaurantEntity restaurant2 = new RestaurantEntity(2, null, "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
 
         given(restaurantRepository.findById(1L))
@@ -200,7 +167,7 @@ public class RestaurantServiceTest {
                 .isNotEmpty();
     }
     @Test
-    void testGetRestaurantOwner_Found() throws Exception {
+    void testGetRestaurantOwner_Found() {
         RestaurantEntity restaurant2 = new RestaurantEntity(2, null, "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
 
         given(restaurantRepository.findOwnerById(1L))
@@ -213,7 +180,7 @@ public class RestaurantServiceTest {
                 .returns("owner", UserEntity::getPassword);
     }
     @Test
-    void testGetRestaurantUser_NotFound() throws Exception {
+    void testGetRestaurantUser_NotFound() {
         given(userRepository.findById("owner"))
                 .willReturn(Optional.empty());
 
@@ -221,7 +188,7 @@ public class RestaurantServiceTest {
                 .isNull();
     }
     @Test
-    void testGetRestaurantUser_Found() throws Exception {
+    void testGetRestaurantUser_Found() {
         given(userRepository.findById("owner"))
                 .willReturn(Optional.of(new UserEntity("owner", "owner")));
         var user = restaurantService.getRestaurantUserByUsername("owner");
@@ -233,7 +200,7 @@ public class RestaurantServiceTest {
                 .returns("ROLE_RESTAURANT", GrantedAuthority::getAuthority);
     }
     @Test
-    void testGetAdminUser_Found() throws Exception {
+    void testGetAdminUser_Found() {
         given(userRepository.findById("admin"))
                 .willReturn(Optional.of(new UserEntity("admin", "admin")));
         var user = restaurantService.getRestaurantUserByUsername("admin");
@@ -246,7 +213,7 @@ public class RestaurantServiceTest {
 
     }
     @Test
-    void testSetRestaurantStatus_Success() throws Exception {
+    void testSetRestaurantStatus_Success() {
         RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
         given(restaurantRepository.save(restaurant1))
                 .willReturn(restaurant1);
