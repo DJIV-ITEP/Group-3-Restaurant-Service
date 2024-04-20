@@ -48,7 +48,7 @@ public class CategoryServiceTest {
                 .willReturn(Optional.empty());
     }
     RestaurantEntity givenFoundRestaurant() {
-        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), null);
+        RestaurantEntity restaurant1 = new RestaurantEntity(1, "name", "address", "location", "status", "Seafood", "Yemeni",new UserEntity("owner", "owner"), new ArrayList<>());
         given(restaurantRepository.findById(1L))
                 .willReturn(Optional.of(restaurant1));
         return restaurant1;
