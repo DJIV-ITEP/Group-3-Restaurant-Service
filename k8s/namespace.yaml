@@ -1,0 +1,4 @@
+apiVersion: v1
+kind: Namespace # Specifies the type of resource being defined, in this case, a Namespace.
+metadata: # Contains metadata about the Namespace, such as its name and labels
+  name: itep-g3  # Name of the Namespace

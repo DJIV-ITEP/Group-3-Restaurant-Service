@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customer-service-k8s
+  namespace: itep-g3
+spec:
+  selector:
+    matchLabels:
+      app: customer-service-k8s
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: customer-service-k8s
+    spec:
+      containers:
+        - name: customer-service-k8s
+ ######################################################################################################
+ ###### This is the composed docker image:tag that will be used to create the service container
+          image: customermicroservice:v1.0.0
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8069
+              hostPort: 8069
+          resources:
+            limits:
+              memory: "256Mi"
+              cpu: "1000m"
+          env:
+ ######################################################################################################
+ ###### The following environment variables will be read by the program.cs at service startup to build the connection string
+            - name: DB_user
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-customer-credentials
+                  key: postgres_user
+            - name: DB_pass
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-customer-credentials
+                  key: postgres_password
+            - name: DB_name
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-customer-configmap
+                  key: name
+ ######################################################################################################
+ ###### The following environment variables will be used to run aspnetcore in the container
+            - name: ASPNETCORE_ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-customer-configmap
+                  key: ASPNETCORE_ENVIRONMENT
+            - name: DOTNET_RUNNING_IN_CONTAINER
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-customer-configmap
+                  key: DOTNET_RUNNING_IN_CONTAINER
+            - name: DOTNET_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-customer-configmap
+                  key: DOTNET_VERSION
+            - name: ASPNET_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-customer-configmap
+                  key: ASPNET_VERSION
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orders-customer-k8s
+  namespace: itep-g3
+  labels:
+    name: orders-customer-k8s
+spec: # Specifies the specification of the Service, including its selector and ports.
+  selector: # Specifies how the Service identifies which Pods to target.
+    app: orders-service-k8s # Selects Pods with the label
+  ports:
+    - protocol: TCP #Specifies the protocol used for the port (TCP or UDP).
+      port: 8069 # Specifies the port number on the Service itself.
+      targetPort: 8069 #Specifies the port number on the Pods targeted by the Service.
+  # spec:
+  #   ports:
+  #   - port: 8082
+
+#   # type: ClusterIP
+#   # ports:
+#   # - port: 8082
+#   #   targetPort: 8082
+#   selector:
+#     app: orders-service-k8s
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: ingress
+#   namespace: delivery-prod
+#   annotations:
+#     nginx.ingress.kubernetes.io/rewrite-target: /$1
+# spec:
+#   rules:
+#     - host: whoami.info
+#       http:
+#         paths:
+#           - path: /
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: orders-service-k8s
+#                 port:
+#                   number: 80

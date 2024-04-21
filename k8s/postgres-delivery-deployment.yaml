@@ -1,0 +1,88 @@
+---
+# Defin a Service to expose database to other service
+apiVersion: v1
+kind: Service
+metadata:
+  name: delivery-db
+  namespace: itep-g3
+  labels:
+    name: delivery-db
+    app: delivery-db
+    tier: database
+spec:
+  ports:
+    - port: 5432
+  selector:
+    app: delivery-db
+    tier: database
+  clusterIP: None
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: delivery-db-pv-claim
+  namespace: itep-g3
+  labels:
+    app: delivery-db
+    tier: database
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: delivery-db
+  namespace: itep-g3
+  labels:
+    app: delivery-db
+    tier: database
+
+spec:
+  selector:
+    matchLabels:
+      app: delivery-db
+  serviceName: delivery-db
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: delivery-db
+        tier: database
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:latest
+          imagePullPolicy: "IfNotPresent"
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-delivery-credentials
+                  key: postgres_user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-delivery-credentials
+                  key: postgres_password
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-delivery-configmap
+                  key: name
+          ports:
+            - containerPort: 5432
+              hostPort: 5434
+              name: postgres
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgres-persistance-storage
+      volumes:
+        - name: postgres-persistance-storage
+          persistentVolumeClaim:
+            claimName: delivery-db-pv-claim

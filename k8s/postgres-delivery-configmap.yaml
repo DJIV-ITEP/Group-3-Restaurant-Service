@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-delivery-configmap
+  namespace: itep-g3
+data:
+  host: "postgres"
+  name: "DeliveryService"
+  database-url: "jdbc:postgresql://delivery-db:5432/DeliveryService"

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-restaurant-configmap
+  namespace: itep-g3
+data:
+  host: "postgres"
+  name: "RestaurantService"
+  database-url: "jdbc:postgresql://restaurant-db:5432/RestaurantService"
