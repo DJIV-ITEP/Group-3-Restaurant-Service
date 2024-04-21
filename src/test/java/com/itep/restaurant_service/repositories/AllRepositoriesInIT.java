@@ -107,14 +107,14 @@ public class AllRepositoriesInIT {
     }
     @Test
     void getRestaurantCategoriesMenusAfterUpdatingOneMenu(){
-        menu.setName("menus");
+        menu.setName("com.itep.restaurant_service.acceptance_tests/menus");
         menu = menuRepository.save(menu);
         var restaurantCategoriesMenus = menuRepository.findByCategoryId(category.getId());
         assertThat(restaurantCategoriesMenus).hasSize(1);
         assertThat(restaurantCategoriesMenus.get(0).getCategory().getRestaurant().getId()).isEqualTo(menu.getCategory().getRestaurant().getId());
         assertThat(restaurantCategoriesMenus.get(0).getCategory().getId()).isEqualTo(menu.getCategory().getId());
         assertThat(restaurantCategoriesMenus.get(0).getId()).isEqualTo(menu.getId());
-        assertThat(restaurantCategoriesMenus.get(0).getName()).isEqualTo("menus");
+        assertThat(restaurantCategoriesMenus.get(0).getName()).isEqualTo("com.itep.restaurant_service.acceptance_tests/menus");
     }
     @Test
     void getRestaurantCategoriesMenusAfterDeletingOneMenu(){
