@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-customer-configmap
+  namespace: itep-g3
+data:
+  host: "postgres"
+  name: customer_ms
+  ASPNETCORE_ENVIRONMENT: Development
+  DOTNET_RUNNING_IN_CONTAINER: "true"
+  DOTNET_VERSION: 8.0.3
+  ASPNET_VERSION: 8.0.3
+  database-url: CustomerServiceConPQL=Server=customer-db.itep-g3:5432;Database=customer_ms;User Id=psorders;Password=ToorDerS;

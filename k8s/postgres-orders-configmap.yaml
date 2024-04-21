@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-orders-configmap
+  namespace: itep-g3
+data:
+  host: "postgres"
+  name: orders_ms
+  ASPNETCORE_ENVIRONMENT: Development
+  DOTNET_RUNNING_IN_CONTAINER: "true"
+  DOTNET_VERSION: 8.0.3
+  ASPNET_VERSION: 8.0.3
+  database-url: OrderServiceConPQL=Server=orders-db.itep-g3:5432;Database=orders_ms;User Id=psorders;Password=ToorDerS;

@@ -1,0 +1,89 @@
+---
+# Defin a Service to expose database to other service
+apiVersion: v1
+kind: Service
+metadata:
+  name: customer-db
+  namespace: itep-g3
+  labels:
+    app: customer-db
+    tier: database
+spec:
+  ports:
+    - port: 5432
+  selector:
+    app: customer-db
+    tier: database
+  clusterIP: None
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: customer-db-pv-claim
+  namespace: itep-g3
+  labels:
+    app: customer-db
+    tier: database
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: customer-db
+  namespace: itep-g3
+  labels:
+    app: customer-db
+    tier: database
+
+spec:
+  selector:
+    matchLabels:
+      app: customer-db
+  serviceName: customer-db
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: customer-db
+        tier: database
+    spec:
+      containers:
+        - name: postgres
+ ######################################################################################################
+ ###### This is the pulled docker image:tag that will be used to create the db container
+          image: postgres:latest
+          imagePullPolicy: Never
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-customer-credentials
+                  key: postgres_user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-customer-credentials
+                  key: postgres_password
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-customer-configmap
+                  key: name
+          ports:
+            - containerPort: 5432
+              hostPort: 5433
+              name: postgres
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgres-persistance-storage
+      volumes:
+        - name: postgres-persistance-storage
+          persistentVolumeClaim:
+            claimName: customer-db-pv-claim
